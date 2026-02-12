@@ -81,6 +81,28 @@
     margin-bottom: 20px;
 }
 
+.calendar-header button {
+    background: white;
+    color: #1c0696;
+    border: 2px solid #1c0696;
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.calendar-header button:hover {
+    background: #1c0696;
+    color: white;
+}
+
+.calendar-header button:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
 .calendar-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -124,15 +146,43 @@
 
 /* Day states */
 .day.available {
-    background: #d4edda; /* Green */
+    background: #d4edda;
+    border: 2px solid #28a745;
+    font-weight: bold;
+}
+
+.day.available:hover {
+    background: #a4e6b4; 
+    border-color: #499e5e;
 }
 
 .day.unavailable {
     background: #f8d7da; /* Red */
+    border: 2px solid #dc3545;
+    font-weight: bold;
+}
+
+.day.unavailable:hover { 
+    background: #f5b7b1; 
+    border-color: #c82333; 
 }
 
 .day.custom-time {
     background: #fff3cd; /* Yellow */
+}
+
+
+.day.past {
+    background: #adabab;
+    border: 2px solid #6c757d;  
+    cursor: not-allowed;
+}
+
+.day.today {
+    background: #c065ac;
+    border: 2px solid #804272;
+    font-weight: bold;
+    cursor: not-allowed;
 }
 
 /* Modal */

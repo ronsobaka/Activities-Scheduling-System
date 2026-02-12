@@ -23,9 +23,9 @@
     
     <div class="calendar-container">
         <div class="calendar-header">
-            <button id="prevMonth" class="calendar-prev">Previous Month</button>
+            <button id="prevMonth">Previous Month</button>
             <h2 id="weekRange"></h2>
-            <button id="nextMonth" class="calendar-next">Next Month</button>
+            <button id="nextMonth">Next Month</button>
         </div>
         <div id="calendarGrid" class="calendar-grid">
             <div class="calendar-weekdays">

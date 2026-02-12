@@ -1,7 +1,15 @@
+const today = new Date();
+const todayDate = today.getDate();
+const todayMonth = today.getMonth();
+const todayYear = today.getFullYear();
 
-const currentDate = new Date();
-let currentMonth = currentDate.getMonth();
-let currentYear = currentDate.getFullYear();
+let currentMonth = today.getMonth();
+let currentYear = today.getFullYear();
+
+let isMouseDown = false;
+let wasDragged = false;
+let dragAction = null;
+
 
 const nextMonthBtn = document.getElementById("nextMonth").addEventListener("click", function () {
     currentMonth += 1;
@@ -59,9 +67,6 @@ function generateCalendar(month, year) {
     }
 
 
-    let isMouseDown = false;
-    let wasDragged = false;
-    let dragAction = null;
 
     document.addEventListener("mousedown", function() {
         isMouseDown = true;
@@ -81,12 +86,26 @@ function generateCalendar(month, year) {
     for (let day = 1; day <= daysInMonth; day++) {
 
         const dayCell = document.createElement('div');
-        dayCell.classList.add('day' , 'available');
-        dayCell.textContent = day;
 
+        const cellDate = new Date(year, month, day);
+        const todayDateObj = new Date(todayYear, todayMonth, todayDate);
+
+        if (cellDate < todayDateObj) {
+            dayCell.classList.remove('available', 'today', 'unavailable');
+            dayCell.classList.add('day', 'past');
+        } else if (year === todayYear && month === todayMonth && day === todayDate) {
+            dayCell.classList.add('day', 'today');
+        } else {
+            dayCell.classList.add('day', 'available');
+        }
+
+        dayCell.textContent = day;
         dayCell.addEventListener('mousedown', function(e) {
             e.preventDefault();
-
+            
+            if (this.classList.contains('past') || this.classList.contains('today')) {
+                return;
+            }
             if (this.classList.contains('available')) {
                 dragAction = 'makeUnavailable';
                 this.classList.remove('available');
@@ -99,6 +118,11 @@ function generateCalendar(month, year) {
         });
 
         dayCell.addEventListener('mouseenter', function() {
+
+            if (this.classList.contains('past') || this.classList.contains('today')) {
+                return;
+            }
+            
             if (isMouseDown) {
                 if (dragAction === 'makeUnavailable') {
                     this.classList.remove('available');
