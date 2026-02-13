@@ -10,6 +10,8 @@ let isMouseDown = false;
 let wasDragged = false;
 let dragAction = null;
 let unavailableDates = {};
+const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
 
 
 const nextMonthBtn = document.getElementById("nextMonth").addEventListener("click", function () {
@@ -48,9 +50,7 @@ function generateCalendar(month, year) {
     const calendarBody = document.getElementById('calendarDays');
     calendarBody.innerHTML = '';
 
-    const weekRange = document.getElementById('weekRange');
-    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    
+    const weekRange = document.getElementById('weekRange');    
     weekRange.textContent = `${monthNames[month]} ${year}`;
     
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -163,19 +163,75 @@ function generateCalendar(month, year) {
             });
 
             conditionBtn.addEventListener('click', function() {
-                
+                generateConditionWindow(cellDate);
             });     
         }
-
-        
-
-
-
         calendarBody.appendChild(dayCell);     
     }
 }
 
 
-function generateConditionWindow(dayCell) {
+/*Condition WIndow*/
+
+document.getElementById("addConditionBtn").addEventListener("click", function() {
+    document.getElementById("conditionForm").style.display = 'block';
+    this.style.display = 'none';
+})
+
+document.getElementById("saveConditionBtn").addEventListener("click", function(){
+    const start = document.getElementById("conditionStart").value;
+    const end = document.getElementById("conditionEnd").value;
+    const reason = document.getElementById("conditionReason").value;
+
+    const conditionItem = document.createElement("div");
+    conditionItem.className = "condition-item";
+    
+    const timeSpan = document.createElement("strong");
+    timeSpan.textContent = `${start} - ${end}`;
+
+    const reasonP = document.createElement("p");
+    reasonP.textContent = reason;
+
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "Edit";
+    editBtn.className = "edit-condition";
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "🗑️";
+    deleteBtn.className = "delete-condition";
+
+    deleteBtn.addEventListener("click", function() {
+        conditionItem.remove();
+
+        const remainingConditions = document.querySelectorAll(".condition-item").length;
+
+        if (remainingConditions === 0) {
+            //add in updating dayCell
+        }
+    })
+
+    conditionItem.appendChild(timeSpan);
+    conditionItem.appendChild(reasonP);
+    conditionItem.appendChild(editBtn);
+    conditionItem.appendChild(deleteBtn);
+
+    document.querySelector('.conditions-list').appendChild(conditionItem);
+
+    document.getElementById('conditionStart').value = '09:00';
+    document.getElementById('conditionEnd').value = '17:00';
+    document.getElementById('conditionReason').value = '';
+})
+
+function generateConditionWindow(cellDate) {
+    document.querySelector('.conditions-container').classList.add('active');
+
+    const conditionsTitle = document.getElementById("conditionsTitle");
+    
+    const day = cellDate.getDate();
+    const month = cellDate.getMonth();
+    const year = cellDate.getFullYear();
+
+    conditionsTitle.textContent = `Conditions for ${day} ${monthNames[month]}, ${year}`;
+
     
 }

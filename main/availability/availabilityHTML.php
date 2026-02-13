@@ -38,12 +38,34 @@
                 <div class="weekday">Sunday</div>
             </div>
 
-            <div class="calendar-days" id="calendarDays">
-                <!-- Calendar days will be generated here by JavaScript -->
+			<div class="calendar-days" id="calendarDays">
+				<!-- Calendar days will be generated here by JavaScript -->
+			</div>
+		</div> 
+	</div>  
+	 	<div class="conditions-container">
+            <div class="conditions-header">
+					<h3 id="conditionsTitle"></h3>
+					<p id="conditionsDescription">Please enter the specific times you will be unavailable as well as the reason if you are able to.</p>
             </div>
 
+			<div class="conditions-items" id="conditionsItems">
+				<button id="addConditionBtn" class="add-condition-btn">
+					+ Add Absent Period
+				</button>
+
+				<div id="conditionForm" class="condition-form">
+					<input type="time" id="conditionStart" class="condition-input" value="09:00">
+					<input type="time" id="conditionEnd" class="condition-input" value="17:00">
+					<input type="text" id="conditionReason" class="condition-input">
+					<button id="saveConditionBtn" class="save-btn">Save</button>
+				</div>
+
+				<div id="conditionsList" class="conditions-list">
+					<!-- Conditions will be saved here -->
+				</div>
+			</div>
         </div>
-    </div>  
         
     <script src="availability.js"></script> 
 </body>
