@@ -9,6 +9,7 @@ let currentYear = today.getFullYear();
 let isMouseDown = false;
 let wasDragged = false;
 let dragAction = null;
+let unavailableDates = {};
 
 
 const nextMonthBtn = document.getElementById("nextMonth").addEventListener("click", function () {
@@ -96,7 +97,12 @@ function generateCalendar(month, year) {
         } else if (year === todayYear && month === todayMonth && day === todayDate) {
             dayCell.classList.add('day', 'today');
         } else {
-            dayCell.classList.add('day', 'available');
+            const dateKey = `${year}-${month + 1}-${day}`;
+            if (unavailableDates[dateKey]) {
+                dayCell.classList.add('day', 'unavailable');
+            } else {
+                dayCell.classList.add('day', 'available');
+            }
         }
 
         dayCell.textContent = day;
@@ -106,14 +112,19 @@ function generateCalendar(month, year) {
             if (this.classList.contains('past') || this.classList.contains('today')) {
                 return;
             }
+
+            const dateKey = `${year}-${month + 1}-${day}`;
+
             if (this.classList.contains('available')) {
                 dragAction = 'makeUnavailable';
                 this.classList.remove('available');
                 this.classList.add('unavailable');
+                unavailableDates[dateKey] = true;
             } else {
                 dragAction = 'makeAvailable';
                 this.classList.remove('unavailable');
                 this.classList.add('available');
+                delete unavailableDates[`${year}-${month + 1}-${day}`];
             }
         });
 
@@ -122,7 +133,7 @@ function generateCalendar(month, year) {
             if (this.classList.contains('past') || this.classList.contains('today')) {
                 return;
             }
-            
+
             if (isMouseDown) {
                 if (dragAction === 'makeUnavailable') {
                     this.classList.remove('available');
@@ -135,7 +146,36 @@ function generateCalendar(month, year) {
             }
         });
 
+        if (!dayCell.classList.contains('past') && (!dayCell.classList.contains('today')) ) {
+
+            const conditionBtn = document.createElement('span');
+            conditionBtn.classList.add('conditionBtn');
+            conditionBtn.textContent = 'Edit';
+            dayCell.style.position = 'relative';
+            dayCell.appendChild(conditionBtn);
+
+            conditionBtn.addEventListener('mouseenter', function(e) {
+                e.stopPropagation();
+            });
+
+            conditionBtn.addEventListener('mousedown', function(e) {
+                e.stopPropagation();
+            });
+
+            conditionBtn.addEventListener('click', function() {
+                
+            });     
+        }
+
+        
+
+
+
         calendarBody.appendChild(dayCell);     
     }
 }
 
+
+function generateConditionWindow(dayCell) {
+    
+}
