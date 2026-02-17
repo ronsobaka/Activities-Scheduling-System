@@ -10,6 +10,7 @@ let isMouseDown = false;
 let wasDragged = false;
 let dragAction = null;
 let unavailableDates = {};
+let conditionsData = {};
 const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 
@@ -32,15 +33,7 @@ const prevMonthBtn = document.getElementById("prevMonth").addEventListener("clic
     generateCalendar(currentMonth, currentYear);
 })
 
-
-
-
-
 generateCalendar(currentMonth, currentYear);
-
-
-
-
 
 function generateCalendar(month, year) {
     // Logic to generate days grid
@@ -183,6 +176,44 @@ document.getElementById("saveConditionBtn").addEventListener("click", function()
     const end = document.getElementById("conditionEnd").value;
     const reason = document.getElementById("conditionReason").value;
 
+    if (!reason.trim()) {
+        document.getElementById("conditionReason").style.border = "2px solid red";
+        return;
+    } else {
+        document.getElementById("conditionReason").style.border = "";
+    }
+
+    const titleText = document.getElementById("conditionsTitle").textContent;
+    const dateKey = titleText.replace("Conditions for ", "");                         //getting date
+     
+
+    if (!conditionsData[dateKey]) {                                                  //initialising/adding data
+        conditionsData[dateKey] = [];
+    }
+    conditionsData[dateKey].push({start, end, reason});
+
+    loadConditionsForDate(dateKey);
+
+    document.getElementById('conditionStart').value = '09:00';
+    document.getElementById('conditionEnd').value = '17:00';
+    document.getElementById('conditionReason').value = '';
+    document.getElementById("conditionForm").style.display = 'none';
+    document.getElementById("addConditionBtn").style.display = 'block';            //clearing form
+
+});
+
+function loadConditionsForDate(dateKey) {  
+    const conditionsList = document.querySelector('.conditions-list')
+    conditionsList.innerHTML = '';
+
+    if (conditionsData[dateKey]) {
+        conditionsData[dateKey].forEach((condition, index) => {
+            addConditionItem(condition.start, condition.end, condition.reason, dateKey, index);
+        });
+    }
+}
+
+function addConditionItem(start, end, reason, dataKey, index) {
     const conditionItem = document.createElement("div");
     conditionItem.className = "condition-item";
     
@@ -200,6 +231,18 @@ document.getElementById("saveConditionBtn").addEventListener("click", function()
     deleteBtn.textContent = "🗑️";
     deleteBtn.className = "delete-condition";
 
+    editBtn.addEventListener("click", function() {
+        document.getElementById("conditionStart").value = start;
+        document.getElementById("conditionEnd").value = end;
+        document.getElementById("conditionReason").value = reason;
+
+        conditionsData[dataKey].splice(index, 1);
+        conditionItem.remove();
+
+        document.getElementById("conditionForm").style.display = "block";
+        document.getElementById("addConditionBtn").style.display = "none";
+    })
+
     deleteBtn.addEventListener("click", function() {
         conditionItem.remove();
 
@@ -216,12 +259,8 @@ document.getElementById("saveConditionBtn").addEventListener("click", function()
     conditionItem.appendChild(deleteBtn);
 
     document.querySelector('.conditions-list').appendChild(conditionItem);
-
-    document.getElementById('conditionStart').value = '09:00';
-    document.getElementById('conditionEnd').value = '17:00';
-    document.getElementById('conditionReason').value = '';
-})
-
+}
+    
 function generateConditionWindow(cellDate) {
     document.querySelector('.conditions-container').classList.add('active');
 
@@ -231,7 +270,8 @@ function generateConditionWindow(cellDate) {
     const month = cellDate.getMonth();
     const year = cellDate.getFullYear();
 
+    const dateKey = `${day} ${monthNames[month]}, ${year}`;
     conditionsTitle.textContent = `Conditions for ${day} ${monthNames[month]}, ${year}`;
 
-    
+    loadConditionsForDate(dateKey);
 }

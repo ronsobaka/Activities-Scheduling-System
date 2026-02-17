@@ -57,8 +57,8 @@
 				<div id="conditionForm" class="condition-form">
 					<input type="time" id="conditionStart" class="condition-input" value="09:00">
 					<input type="time" id="conditionEnd" class="condition-input" value="17:00">
-					<input type="text" id="conditionReason" class="condition-input">
-					<button id="saveConditionBtn" class="save-btn">Save</button>
+					<input type="text" id="conditionReason" class="condition-input" placeholder="Enter Reason:" required>
+					<button id="saveConditionBtn" class="save-btn">Add</button>
 				</div>
 
 				<div id="conditionsList" class="conditions-list">
