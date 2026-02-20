@@ -16,10 +16,6 @@
     <div class="title">
         <h1>Your Availability</h1>
     </div>
-
-    <div class="availability-section">
-        <p>Please select your availability for the upcoming week:</p>
-    </div>
     
     <div class="calendar-container">
         <div class="calendar-header">
@@ -64,9 +60,9 @@
 				<div id="conditionsList" class="conditions-list">
 					<!-- Conditions will be saved here -->
 				</div>
-			</div>
+            </div>
         </div>
-        
+        <button id="saveAllBtn" class="save-all-changes">Save All Changes</button>
     <script src="availability.js"></script> 
 </body>
 </html>

@@ -1,6 +1,17 @@
 * {
     margin: 0;
     padding: 0;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+input, textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
 }
 
 .title {
@@ -370,4 +381,40 @@
 
 .delete-condition:hover {
     opacity: 0.7;
+}
+
+.complete-conditions {
+    background: #1c0696;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.complete-conditions:hover {
+    background: #7aa9b8;
+}
+
+#saveAllBtn {
+    background: linear-gradient(to right, #7aa9b8, #1c0696);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    border-radius: 25px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: all 0.2s ease;
+    display: block;
+    margin: 30px auto;
+}
+
+#saveAllBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }

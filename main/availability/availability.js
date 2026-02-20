@@ -11,6 +11,8 @@ let wasDragged = false;
 let dragAction = null;
 let unavailableDates = {};
 let conditionsData = {};
+let currentDayCell = null;
+let hasChanges = false;
 const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 
@@ -37,7 +39,6 @@ generateCalendar(currentMonth, currentYear);
 
 function generateCalendar(month, year) {
     // Logic to generate days grid
-    // First day of month, total days, etc.
 
     // Clear previous calendar
     const calendarBody = document.getElementById('calendarDays');
@@ -98,6 +99,11 @@ function generateCalendar(month, year) {
             }
         }
 
+        const conditionDateKey = `${day} ${monthNames[month]}, ${year}`;
+        if (conditionsData[conditionDateKey] && conditionsData[conditionDateKey].length > 0) {
+            dayCell.classList.add("conditioned");
+        }
+
         dayCell.textContent = day;
         dayCell.addEventListener('mousedown', function(e) {
             e.preventDefault();
@@ -105,6 +111,7 @@ function generateCalendar(month, year) {
             if (this.classList.contains('past') || this.classList.contains('today')) {
                 return;
             }
+            markChanges();
 
             const dateKey = `${year}-${month + 1}-${day}`;
 
@@ -156,7 +163,8 @@ function generateCalendar(month, year) {
             });
 
             conditionBtn.addEventListener('click', function() {
-                generateConditionWindow(cellDate);
+                generateConditionWindow(cellDate, dayCell);
+                markChanges();
             });     
         }
         calendarBody.appendChild(dayCell);     
@@ -191,6 +199,8 @@ document.getElementById("saveConditionBtn").addEventListener("click", function()
         conditionsData[dateKey] = [];
     }
     conditionsData[dateKey].push({start, end, reason});
+    markChanges();
+    currentDayCell.classList.add("conditioned");
 
     loadConditionsForDate(dateKey);
 
@@ -227,9 +237,7 @@ function addConditionItem(start, end, reason, dataKey, index) {
     editBtn.textContent = "Edit";
     editBtn.className = "edit-condition";
 
-    const deleteBtn = document.createElement("button");
-    deleteBtn.textContent = "🗑️";
-    deleteBtn.className = "delete-condition";
+    
 
     editBtn.addEventListener("click", function() {
         document.getElementById("conditionStart").value = start;
@@ -241,17 +249,24 @@ function addConditionItem(start, end, reason, dataKey, index) {
 
         document.getElementById("conditionForm").style.display = "block";
         document.getElementById("addConditionBtn").style.display = "none";
+        markChanges();
     })
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "🗑️";
+    deleteBtn.className = "delete-condition";
 
     deleteBtn.addEventListener("click", function() {
         conditionItem.remove();
+        conditionsData[dataKey].splice(index, 1);
 
-        const remainingConditions = document.querySelectorAll(".condition-item").length;
-
-        if (remainingConditions === 0) {
-            //add in updating dayCell
+        if (conditionsData[dataKey].length === 0) {
+            currentDayCell.classList.remove("conditioned");
         }
+        markChanges();
     })
+
+    
 
     conditionItem.appendChild(timeSpan);
     conditionItem.appendChild(reasonP);
@@ -261,7 +276,8 @@ function addConditionItem(start, end, reason, dataKey, index) {
     document.querySelector('.conditions-list').appendChild(conditionItem);
 }
     
-function generateConditionWindow(cellDate) {
+function generateConditionWindow(cellDate, dayCell) {
+    currentDayCell = dayCell;
     document.querySelector('.conditions-container').classList.add('active');
 
     const conditionsTitle = document.getElementById("conditionsTitle");
@@ -274,4 +290,74 @@ function generateConditionWindow(cellDate) {
     conditionsTitle.textContent = `Conditions for ${day} ${monthNames[month]}, ${year}`;
 
     loadConditionsForDate(dateKey);
+
+
+
+    if (!document.querySelector('.complete-conditions')) {
+        const completeBtn = document.createElement("button");
+        completeBtn.textContent = "Save & Complete";
+        completeBtn.className = "complete-conditions";
+
+        completeBtn.addEventListener("click", function(){
+            if (conditionsData[dateKey] && conditionsData[dateKey].length > 0) {
+                dayCell.classList.add("conditioned");
+            } else {
+                dayCell.classList.remove("conditioned");
+            }
+            document.querySelector(".conditions-container").classList.remove('active');
+        });
+
+        document.querySelector('.conditions-container').appendChild(completeBtn);
+    }
+}
+
+
+//saving to database
+
+document.getElementById("saveAllBtn").addEventListener("click", function() {
+    const dataToSave = {
+        unavailable: unavailableDates,
+        conditions: conditionsData
+    };
+
+    //sending data to php file
+
+    this.textContent = "Saving...";
+    this.style.background = "#ccc";
+    this.disabled = true;
+    
+    fetch("availability.php", {
+        method: 'POST',
+        headers: {
+            'Content-type' : 'application/json',
+        },
+        body: JSON.stringify(dataToSave)
+    })
+
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            this.textContent = "✓ Saved";
+            this.style.background = "#28a745";
+            this.disabled = false;
+        } else {
+            this.textContent = "Save All Changes";
+            this.style.background = "linear-gradient(to right, #7aa9b8, #1c0696)";
+            this.disabled = false;
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        this.textContent = "Save All Changes";
+            this.style.background = "linear-gradient(to right, #7aa9b8, #1c0696)";
+            this.disabled = false;
+            alert('Error: ' + error);
+    })
+});
+
+function markChanges() {
+    hasChanges = true;
+    const saveBtn = document.getElementById("saveAllBtn")
+    saveBtn.textContent = "Save All Changes";
+    saveBtn.style.background = "linear-gradient(to right, #7aa9b8, #1c0696)";
 }
