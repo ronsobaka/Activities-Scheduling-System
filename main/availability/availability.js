@@ -35,7 +35,23 @@ const prevMonthBtn = document.getElementById("prevMonth").addEventListener("clic
     generateCalendar(currentMonth, currentYear);
 })
 
-generateCalendar(currentMonth, currentYear);
+fetch("availability.php")
+    .then(response => response.json())
+    .then(data => {
+        if (data.unavailable) {
+            unavailableDates = data.unavailable;
+        }
+
+        if (data.conditions) {
+            conditionsData = data.conditions;
+        }
+
+        generateCalendar(currentMonth, currentYear);
+    })
+    .catch(error => {
+        console.error('Error fetching availability data:', error);
+        generateCalendar(currentMonth, currentYear);
+    });
 
 function generateCalendar(month, year) {
     // Logic to generate days grid
@@ -81,6 +97,7 @@ function generateCalendar(month, year) {
     for (let day = 1; day <= daysInMonth; day++) {
 
         const dayCell = document.createElement('div');
+        dayCell.dataset.dateKey = `${year}-${month + 1}-${day}`;
 
         const cellDate = new Date(year, month, day);
         const todayDateObj = new Date(todayYear, todayMonth, todayDate);
@@ -113,7 +130,7 @@ function generateCalendar(month, year) {
             }
             markChanges();
 
-            const dateKey = `${year}-${month + 1}-${day}`;
+            const dateKey = this.dataset.dateKey;
 
             if (this.classList.contains('available')) {
                 dragAction = 'makeUnavailable';
@@ -124,7 +141,7 @@ function generateCalendar(month, year) {
                 dragAction = 'makeAvailable';
                 this.classList.remove('unavailable');
                 this.classList.add('available');
-                delete unavailableDates[`${year}-${month + 1}-${day}`];
+                delete unavailableDates[dateKey];
             }
         });
 
@@ -135,12 +152,15 @@ function generateCalendar(month, year) {
             }
 
             if (isMouseDown) {
+                const dateKey = this.dataset.dateKey;
                 if (dragAction === 'makeUnavailable') {
                     this.classList.remove('available');
                     this.classList.add('unavailable');
+                    unavailableDates[dateKey] = true;
                 } else {
                     this.classList.remove('unavailable');
                     this.classList.add('available');
+                    delete unavailableDates[dateKey];
                 }
                 wasDragged = true;
             }
@@ -198,7 +218,11 @@ document.getElementById("saveConditionBtn").addEventListener("click", function()
     if (!conditionsData[dateKey]) {                                                  //initialising/adding data
         conditionsData[dateKey] = [];
     }
-    conditionsData[dateKey].push({start, end, reason});
+    conditionsData[dateKey].push({
+        startTime: start,
+        endTime: end,
+        reason: reason
+    });
     markChanges();
     currentDayCell.classList.add("conditioned");
 
