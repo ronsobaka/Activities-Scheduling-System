@@ -37,7 +37,7 @@
         exit;
     }
 
-    $stmt = $connection->prepare("SELECT userID, roleID, password FROM `user` WHERE email = ?");
+    $stmt = $connection->prepare("SELECT userID, roleID, password, firstName FROM `user` WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -63,11 +63,13 @@
     session_regenerate_id(true);
 
     $_SESSION['userID'] = $row['userID'];
-    $_SESSION['logged_in'] = true;
+    $_SESSION['loggedIn'] = true;
     $_SESSION['roleID'] = $row['roleID'];
+    $_SESSION['firstName'] = $row['firstName'];
+    $_SESSION['isManager'] = ($row['roleID'] == 1 || $row['roleID'] == 2);
 
     echo json_encode([
         "success" => true,
-        "message" => "Login Succeful! logging you in..."
+        "message" => "Login Successful! Logging you in..."
     ]);
 ?>

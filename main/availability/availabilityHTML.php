@@ -1,3 +1,13 @@
+<?php
+    session_start();
+    require_once '../../globalFunctions.php';
+    if (!isset($_SESSION['userID']) || !isset($_SESSION['roleID']) || $_SESSION['loggedIn'] !== true) {
+        header("Location: ../login/loginHTML.php");
+        exit();
+    }
+?>
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -9,6 +19,9 @@
     <div class="topnav">
         <a href="../main.php">Home</a>
         <a class="active" href="#news">Availability</a>
+        <?php if ($_SESSION['isManager']): ?>
+            <a href="../scheduleManager/scheduleManagerHTML.php">Schedule Manager</a>
+        <?php endif; ?>
         <a href="#contact">Contact</a>
         <a href="#about">About</a>
     </div>

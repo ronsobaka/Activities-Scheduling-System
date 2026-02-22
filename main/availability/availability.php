@@ -113,10 +113,10 @@ try {      //Removing existing data
             $day = $dateParts[0];
             $month = str_replace(",", "", $dateParts[1]);
             $year = $dateParts[2];
-            $monthNum = date('n', strtotime("$monthName 1"));
-            $formattedDate = sprintf("%04d-%02d-%02d", $dateParts[0], $dateParts[1], $dateParts[2]);
+            $monthNum = date('n', strtotime("$month 1"));
+            $formattedDate = sprintf("%04d-%02d-%02d", $year, $monthNum, $day);
 
-            foreach($conditions as $condition) {
+            foreach($data['conditions'][$dateKey] as $condition) {
 
                 if (isset($condition['startTime'], $condition['endTime'], $condition['reason'])) {
                     $stmt->bind_param("issss", $userID, $formattedDate, $condition['startTime'], $condition['endTime'], $condition['reason']);

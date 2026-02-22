@@ -19,7 +19,7 @@
 
         <h2>Please login to begin</h2>
 
-        <form id="loginForm">
+        <form id="loginForm" method="POST" action="login.php">
 
             <?php echo csrfField(); ?>  
 

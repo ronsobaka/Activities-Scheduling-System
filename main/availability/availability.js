@@ -105,6 +105,9 @@ function generateCalendar(month, year) {
         if (cellDate < todayDateObj) {
             dayCell.classList.remove('available', 'today', 'unavailable');
             dayCell.classList.add('day', 'past');
+
+            delete unavailableDates[`${year}-${month + 1}-${day}`]
+
         } else if (year === todayYear && month === todayMonth && day === todayDate) {
             dayCell.classList.add('day', 'today');
         } else {
@@ -339,6 +342,8 @@ function generateConditionWindow(cellDate, dayCell) {
 //saving to database
 
 document.getElementById("saveAllBtn").addEventListener("click", function() {
+
+
     const dataToSave = {
         unavailable: unavailableDates,
         conditions: conditionsData

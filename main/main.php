@@ -3,18 +3,18 @@
         'cookie_httponly' => true,
         'cookie_samesite' => 'Strict',
     ]);
-
+    require_once '../globalFunctions.php';
     $timeout = 30 * 60;
+
     if (isset($_SESSION['last_activity']) && time() - $_SESSION['last_activity'] > $timeout) {
-        session_unset();
         session_destroy();
-        header("Location: login.php");
+        header("Location: ../login/loginHTML.php");
         exit;
     }
     $_SESSION['last_activity'] = time();
 
-    if (!isset($_SESSION['userID']) || $_SESSION['logged_in'] !== true) {
-        header("Location: login.php");
+    if (!isset($_SESSION['userID']) || $_SESSION['loggedIn'] !== true) {
+        header("Location: ../login/loginHTML.php");
         exit;
     }
 
@@ -30,5 +30,15 @@
     $result = $stmt->get_result();
     $user = $result->fetch_assoc();
     $stmt->close();
+
+    if ($user['status'] != 'active') {
+        session_destroy();
+        header("Location: ../login/loginHTML.php?error=not_active");
+        exit;
+    }
+
+
+    $isManager = ($user['roleID'] == 1 || $user['roleID'] == 2);
+    $isStaff = ($user['roleID'] == 3);
     include "mainHTML.php";
 ?>
