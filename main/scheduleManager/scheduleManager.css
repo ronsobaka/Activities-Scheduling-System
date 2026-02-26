@@ -15,14 +15,17 @@
     background: white;
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    flex-wrap: wrap;
-    gap: 15px;
+    position: relative;  
 }
 
 .schedule-manager-header h2 {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 2em;
     margin: 0;
+    position: absolute;  
+    left: 50%;           
+    transform: translateX(-50%);  
+    white-space: nowrap; 
 }
 
 .schedule-manager-header button {
@@ -41,7 +44,31 @@
     color: white;
 }
 
-.view-dropdown {
+.schedule-manager-header button:first-child {
+    margin-right: auto;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: auto;  
+}
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-width: 120px;
+    justify-content: flex-end;
+}
+
+.view-dropdown-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.view-dropdown-container select {
     padding: 8px 20px;
     border: 2px solid #1c0696;
     border-radius: 25px;
@@ -51,11 +78,11 @@
     cursor: pointer;
 }
 
-.view-dropdown:hover {
+.view-dropdown-container select:hover {
     background: #f0f0f0;
 }
 
-/* Calendar grid - will adapt to width */
+/* Calendar */
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
