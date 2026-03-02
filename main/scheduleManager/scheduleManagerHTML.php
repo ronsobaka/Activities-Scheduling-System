@@ -85,10 +85,7 @@
                         
                         <label>End Time:</label>
                         <input type="time" id="activityEnd" value="17:00">
-                        
-                        <label>Staff Required:</label>
-                        <input type="number" id="staffRequired" value="1" min="1">
-                        
+
                         <label>Location:</label>
                         <input type="text" id="activityLocation" placeholder="e.g., Room 101">
                         
@@ -97,7 +94,14 @@
                         
                         <label>Notes:</label>
                         <textarea id="activityNotes" rows="3"></textarea>
-                        
+
+                        <button id="assignStaffBtn" class="assign-staff-btn">Assign Staff</button>
+                        <div id= "selectedStaffContainer" class="selected-staff-container">
+                            <h4>Assigned Staff:</h4>
+                            <div id="selectedStaffView" class="selected-staff-list">
+                                <!-- Selected staff will be displayed here -->
+                            </div>
+                        </div>
                         <div class="form-buttons">
                             <button id="saveActivityBtn" class="save-btn">Save Activity</button>
                             <button id="cancelActivityBtn" class="cancel-btn">Cancel</button>
@@ -106,6 +110,40 @@
                 </div>
             </div>
         </div>
+
+        <div id="staffAssignmentModal" class="staff-assignment-modal" style="display: none;">
+            <div class="staff-assignment-modal-header">
+                <h3 id="staffAssignmentTitle">Assign Staff</h3>
+                <button id="closeStaffAssignmentModal" class="close-modal">&times;</button>
+            </div>
+
+            <div class="staff-assignment-modal-content">
+                <div id="staffListContainer" class="staff-list-container">
+    
+                    <div id="selectedStaffList" class="selected-staff-list">
+                        <!-- Selected staff will be displayed here -->
+                    </div>
+
+                    <div id="availableStaffList" class="available-staff-list">
+                        <!-- Available staff will be listed here -->
+                    </div>
+
+                    <div id="conditionedStaffList" class="unavailable-staff-list">
+                        <!-- Unavailable staff will be listed here -->
+                    </div>
+
+                    <div id="unavailableStaffList" class="unavailable-staff-list">
+                        <!-- Unavailable staff will be listed here -->
+                    </div>
+                </div>
+
+                <div class="form-buttons">
+                    <button id="saveStaffAssignments" class="save-btn">Save Assignments</button>
+                    <button id="cancelStaffBtn" class="cancel-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="scheduleManager.js"></script>
 </body>

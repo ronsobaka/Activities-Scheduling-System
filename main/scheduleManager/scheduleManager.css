@@ -391,3 +391,133 @@
 .cancel-btn:hover {
     background: #999;
 }
+
+/* Staff Assignment Button */
+.assign-staff-btn {
+    background: #1c0696;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 10px 0;
+    width: 100%;
+}
+
+.assign-staff-btn:hover {
+    background: #7aa9b8;
+}
+
+/* Selected Staff Container */
+.selected-staff-container {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+.selected-staff-container h4 {
+    color: #1c0696;
+    margin: 0 0 10px 0;
+    font-size: 14px;
+}
+
+.selected-staff-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    min-height: 30px;
+}
+
+.staff-tag {
+    background: #1c0696;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.staff-tag button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 2px;
+}
+
+.staff-tag button:hover {
+    opacity: 0.8;
+}
+
+/* Staff Assignment Modal */
+.staff-assignment-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1100;
+    justify-content: center;
+    align-items: center;
+}
+
+.staff-assignment-modal.active {
+    display: flex;
+}
+
+.staff-assignment-modal-header {
+    background: white;
+    padding: 15px 20px;
+    border-bottom: 2px solid #1c0696;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 10px 10px 0 0;
+}
+
+.staff-assignment-modal-content {
+    background: white;
+    width: 500px;
+    max-width: 90%;
+    max-height: 80vh;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.staff-list-container {
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 400px;
+}
+
+.available-staff-list, .unavailable-staff-list {
+    margin-top: 15px;
+}
+
+.available-staff-list h4, .unavailable-staff-list h4 {
+    color: #1c0696;
+    margin-bottom: 10px;
+    font-size: 1em;
+}
+
+.staff-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    margin: 5px 0;
+    background: #f8f9fa;
+    border-radius: 5px;
+    border-left: 3px solid #1c0696;
+}
+
+.staff-item input[type="checkbox"] {
+    margin-right: 10px;
+}

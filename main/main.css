@@ -418,3 +418,51 @@ input, textarea {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
+
+.activity-preview {
+    font-size: 11px;
+    background: #1c0696;
+    color: white;
+    padding: 2px 4px;
+    margin: 2px 0;
+    border-radius: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.activity-preview.more {
+    background: #7aa9b8;
+    font-style: italic;
+}
+
+.delete-activity {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0 5px;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+}
+
+.delete-activity:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.more-activities {
+    font-size: 11px;
+    background: #7aa9b8;
+    color: white;
+    padding: 2px 4px;
+    margin: 2px 0;
+    border-radius: 3px;
+    text-align: center;
+    font-style: italic;
+    cursor: pointer;
+}
+
+.more-activities:hover {
+    background: #1c0696;
+}
