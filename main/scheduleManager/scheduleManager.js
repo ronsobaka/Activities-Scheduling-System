@@ -377,30 +377,81 @@ function saveActivityToServer() {
 }
 
 
-
-
-
 // Staff Assignment
 
 
 function getStaffAvailability(date, activityID) {
-    fetch(`getStaffAvailability.php?date=${date}&activityID=${activityID}`)
+    fetch(`staffAvailability.php?date=${date}&activityID=${activityID}`)
     .then(response => response.json())
     .then(data => {
-        staffAvailability[date] = data;
-        updateStaffAssignmentModal(date);
+        console.log("Received staff availability:", data);
+        if (data && data.staff) {
+            staffAvailability[date] = data;
+            updateStaffAssignmentModal(date);
+        } else {
+            console.error("Invalid staff availability data:", data);
+        }
+        
     })
     .catch(error => {
         console.error("Error fetching staff availability:", error);
     });
 }
 
+function updateStaffAssignmentModal(date) {
+    const data = staffAvailability[date];
+    if (!data) {
+        return;
+    }
+    
+    document.getElementById("availableStaffList").innerHTML = "<h4>Available Staff</h4>";
+    document.getElementById("conditionedStaffList").innerHTML = "<h4>Conditioned Staff</h4>";
+    document.getElementById("unavailableStaffList").innerHTML = "<h4>Unavailable Staff</h4>";
+
+    data.staff.forEach(staff => {
+        const staffElement = createStaffElement(staff);
+
+        if (staff.availability === "available") {
+            document.getElementById("availableStaffList").appendChild(staffElement);
+        } else if (staff.availability === "conditioned") {
+            document.getElementById("conditionedStaffList").appendChild(staffElement);
+        } else {
+            document.getElementById("unavailableStaffList").appendChild(staffElement);
+        }
+    });
+    window.otherAssignments = data.otherAssignments;
+}
+
+function createStaffElement(staff) {
+    const div = document.createElement("div");
+    div.className = "staff-item";
+    div.innerHTML = `
+        <input type="checkbox" ${staff.selected ? 'checked' : ''} ${staff.availability === 'unavailable' ? 'disabled' : ''}>
+        <div class="staff-info">
+            <div class="staff-name">${staff.firstName} ${staff.lastName}</div>
+            ${staff.conditions.length > 0 ? 
+                `<div class="staff-condition">⚠️ ${staff.conditions[0].reason}</div>` : ''}
+        </div>
+    `;
+    return div;
+}
+
 document.getElementById("assignStaffBtn").addEventListener("click", function() {
-    document.getElementById("staffAssignmentModal").style.display = "block";
+    console.log("Assign Staff button clicked");
+    document.getElementById("staffAssignmentModal").classList.add("active");
+
+    const date = document.getElementById("activityModal").dataset.currentDate;
+    const activityID = document.getElementById("activityModal").dataset.activityID || 0;
+    console.log("Date:", date, "Activity ID:", activityID);
+
+    getStaffAvailability(date, activityID);
 });
 
 
 
 document.getElementById("closeStaffAssignmentModal").addEventListener("click", function() {
-    document.getElementById("staffAssignmentModal").style.display = "none";
+    document.getElementById("staffAssignmentModal").classList.remove("active");
+});
+document.getElementById("cancelStaffAssignmentBtn").addEventListener("click", function() {
+    document.getElementById("staffAssignmentModal").classList.remove("active");
 });

@@ -1,4 +1,7 @@
 <?php
+    error_reporting(E_ALL);
+    ini_set('display_errors', 0);
+    ob_clean();
     session_start();
     require_once '../../globalFunctions.php';
 
@@ -32,8 +35,7 @@
         }
 
         if (!$activityID) {
-            echo json_encode(["error" => "Activity ID parameter is required"]);
-            exit();
+            $activityID = 0;
         }
 
         $staffAvailability = [];
@@ -97,25 +99,52 @@
         //selected staff for activity
 
         $selectedStaffQuery = "SELECT userID FROM activityassignments WHERE activity_id = ?";
-
         $stmt = $connection->prepare($selectedStaffQuery);
-        $stmt->bind_param("i", $activityID);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        if ($activityID) {
+            $stmt->bind_param("i", $activityID);
+            $stmt->execute();
+            $result = $stmt->get_result();
 
-        while ($row = $result->fetch_assoc()) {
-            if (isset($staffAvailability[$row['userID']]) ) {
-                $staffAvailability[$row['userID']]['selected'] = true;
+            while ($row = $result->fetch_assoc()) {
+                if (isset($staffAvailability[$row['userID']]) ) {
+                    $staffAvailability[$row['userID']]['selected'] = true;
+                }
             }
         }
 
         //other activites for on the day
 
-        $otherAssignmentsQuery = "
-            SELECT "activities.id, activities.startTime, activities.endTime, activities.name, actitivity_assignments.userID
+        $otherAssignments = [];
 
-        $staffAvailability = array_values($staffAvailability);
-        echo json_encode($staffAvailability);
+        $otherAssignmentsQuery = "
+            SELECT a.id, a.start_time, a.end_time, a.name, aa.userID
+            FROM activities a
+            JOIN activity_assignments aa ON a.id = aa.activity_id
+            WHERE a.activity_date = ? AND a.id != ?
+        ";
+
+        $stmt = $connection->prepare($otherAssignmentsQuery);
+        $stmt->bind_param("si", $dbDate, $activityID);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        while ($row = $result->fetch_assoc()) {
+            $otherAssignments[] = [
+                "activityID" => $row['id'],
+                "name" => $row['name'],
+                "startTime" => $row['start_time'],
+                "endTime" => $row['end_time'],
+                "userID" => $row['userID']
+            ];
+        }
+
+        $response = [
+            "staff" => array_values($staffAvailability),
+            "otherAssignments" => $otherAssignments
+        ];
+
+    
+        echo json_encode($response);
     }
 
 
