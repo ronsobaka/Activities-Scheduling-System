@@ -17,11 +17,51 @@
 
     $connection = new mysqli("localhost", "root", "", "finalproject");
 
-    if ($connection->connect_error) {
+    if ($connection->connect_error || !$connection) {
         echo json_encode(["error" => "Database connection failed"]);
         exit();
     }
 
+    // Handle POST request - Save staff assignments
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        if (!isset($data['activityID']) || !isset($data['staffIds'])) {
+            echo json_encode(["error" => "Activity ID and staff IDs are required"]);
+            exit();
+        }
+
+        $activityID = $data['activityID'];
+        $staffIds = $data['staffIds'];
+
+        $connection->begin_transaction();
+
+        try {
+            // Delete existing assignments
+            $deleteStmt = $connection->prepare("DELETE FROM activityassignments WHERE activityID = ?");
+            $deleteStmt->bind_param("i", $activityID);
+            $deleteStmt->execute();
+
+            // Insert new assignments
+            if (!empty($staffIds)) {
+                $insertStmt = $connection->prepare("INSERT INTO activityassignments (activityID, userID) VALUES (?, ?)");
+                foreach ($staffIds as $staffId) {
+                    $insertStmt->bind_param("ii", $activityID, $staffId);
+                    $insertStmt->execute();
+                }
+            }
+
+            $connection->commit();
+            echo json_encode(["success" => true]);
+
+        } catch (Exception $e) {
+            $connection->rollback();
+            echo json_encode(["error" => "Failed to save assignments: " . $e->getMessage()]);
+        }
+        exit();
+    }
+
+    // Handle GET request - Fetch staff availability
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         $date = $_GET['date'] ?? null;
         $activityID = $_GET['activityID'] ?? null;
@@ -40,14 +80,10 @@
 
         $staffAvailability = [];
 
-        //fetch all staff for the day
-
         $allStaffQuery = "SELECT userID, firstName, lastName FROM user WHERE roleID = 3";
-
         $stmt = $connection->prepare($allStaffQuery);
         $stmt->execute();
         $result = $stmt->get_result();
-
         
         while ($row  = $result->fetch_assoc()) {
             $staffAvailability[$row['userID']]= [
@@ -60,10 +96,7 @@
             ];
         }
 
-        //unavailable staff for the day
-
-        $unavailableStaffQuery = "SELECT userID FROM unavailabledates WHERE available_date = ?";
-
+        $unavailableStaffQuery = "SELECT userID FROM unavailabledates WHERE unavailabledate = ?";
         $stmt = $connection->prepare($unavailableStaffQuery);
         $stmt->bind_param("s", $dbDate);
         $stmt->execute();
@@ -75,30 +108,24 @@
             }
         }
 
-        //conditioned staff for the day
-
-        $conditionedStaffQuery = "SELECT userID, startTime, endTime, reason FROM conditions WHERE condition_date = ?";
-
+        $conditionedStaffQuery = "SELECT userID, starttime, endtime, reason FROM conditions WHERE conditiondate = ?";
         $stmt = $connection->prepare($conditionedStaffQuery);
         $stmt->bind_param("s", $dbDate);
         $stmt->execute();
         $result = $stmt->get_result();
-
         
         while($row = $result->fetch_assoc()) {
             if (isset($staffAvailability[$row['userID']]) ) {
                 $staffAvailability[$row['userID']]['availability'] = "conditioned";
                 $staffAvailability[$row['userID']]['conditions'][] = [
-                    "startTime" => $row['startTime'],
-                    "endTime" => $row['endTime'],
+                    "startTime" => $row['starttime'],
+                    "endTime" => $row['endtime'],
                     "reason" => $row['reason']
                 ];
             }
         }
 
-        //selected staff for activity
-
-        $selectedStaffQuery = "SELECT userID FROM activityassignments WHERE activity_id = ?";
+        $selectedStaffQuery = "SELECT userID FROM activityassignments WHERE activityid = ?";
         $stmt = $connection->prepare($selectedStaffQuery);
         if ($activityID) {
             $stmt->bind_param("i", $activityID);
@@ -112,17 +139,14 @@
             }
         }
 
-        //other activites for on the day
-
         $otherAssignments = [];
 
         $otherAssignmentsQuery = "
-            SELECT a.id, a.start_time, a.end_time, a.name, aa.userID
+            SELECT a.id, a.starttime, a.endtime, a.name, aa.userID
             FROM activities a
-            JOIN activity_assignments aa ON a.id = aa.activity_id
-            WHERE a.activity_date = ? AND a.id != ?
+            JOIN activityassignments aa ON a.id = aa.activityid
+            WHERE a.activitydate = ? AND a.id != ?
         ";
-
         $stmt = $connection->prepare($otherAssignmentsQuery);
         $stmt->bind_param("si", $dbDate, $activityID);
         $stmt->execute();
@@ -132,8 +156,8 @@
             $otherAssignments[] = [
                 "activityID" => $row['id'],
                 "name" => $row['name'],
-                "startTime" => $row['start_time'],
-                "endTime" => $row['end_time'],
+                "startTime" => $row['starttime'],
+                "endTime" => $row['endtime'],
                 "userID" => $row['userID']
             ];
         }
@@ -143,9 +167,7 @@
             "otherAssignments" => $otherAssignments
         ];
 
-    
         echo json_encode($response);
+        exit();
     }
-
-
-?>
+?>s

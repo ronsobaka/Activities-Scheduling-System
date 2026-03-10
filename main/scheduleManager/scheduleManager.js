@@ -44,7 +44,6 @@ function generateSchedule() {
 };
 
 function generateMonthView() {
-    console.log("Month view selected for: ", month, year);
 
     const monthIndex = monthNames.indexOf(month);
     let firstDay = new Date(year, monthIndex, 1).getDay();
@@ -165,6 +164,7 @@ document.getElementById("saveActivityBtn").addEventListener("click", function() 
     };
 
     const currentDate = document.getElementById("activityModal").dataset.currentDate;
+    const activityID = document.getElementById("activityModal").dataset.activityID;
 
     if (!activities[currentDate]) {
         activities[currentDate] = [];
@@ -182,13 +182,32 @@ document.getElementById("saveActivityBtn").addEventListener("click", function() 
     updateCellPreview(currentDate);
     loadActivitiesForDate(currentDate);
 
-    saveActivityToServer();
+    saveActivityToServer().then(savedActivities => {
+        console.log("Saved activities from server:", savedActivities);
+        console.log("editingIndex:", editingIndex);
+        console.log("selectedStaff:", selectedStaff);
+        
+        // For NEW activities (no editingIndex) with staff selected
+        if (savedActivities && savedActivities.length > 0 && !editingIndex && selectedStaff.length > 0) {
+            const newActivityID = savedActivities[savedActivities.length - 1].id;
+            console.log("New activity ID:", newActivityID);
+            if (newActivityID) {
+                saveStaffAssignments(newActivityID, selectedStaff);
+            }
+        }
+        // For EXISTING activities with staff selected
+        else if (activityID && selectedStaff.length > 0) {
+            console.log("Existing activity ID:", activityID);
+            saveStaffAssignments(activityID, selectedStaff);
+        }
+    });
 
     clearForm();
 
+
     document.getElementById("activityForm").style.display = "none";
     document.getElementById("addActivityBtn").style.display = "block";
-})
+});
 
 function editActivity(date, index) {
     const activity = activities[date][index];
@@ -199,8 +218,32 @@ function editActivity(date, index) {
     document.getElementById("activityLocation").value = activity.location || '';
     document.getElementById("activityEquipment").value = activity.equipment || '';
     document.getElementById("activityNotes").value = activity.notes || '';
-    
+    document.getElementById("activityModal").dataset.activityID = activity.id || '';
     document.getElementById("activityModal").dataset.editingIndex = index;
+
+    if (activity.selectedStaff && activity.selectedStaff.length > 0) {
+        selectedStaff = [...activity.selectedStaff];
+    } else {
+        selectedStaff = [];
+    }
+
+    // Show IDs immediately
+    updateActivityFormSelectedStaff();
+
+    // Then fetch real names and update when available
+    const activityID = activity.id || 0;
+    fetch(`staffAvailability.php?date=${date}&activityID=${activityID}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.staff) {
+                staffAvailability[date] = data;
+                // Update the display with real names
+                updateActivityFormSelectedStaff();
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching staff availability:", error);
+        });
 
     document.getElementById("activityForm").style.display = "block";
     document.getElementById("addActivityBtn").style.display = "none";
@@ -208,7 +251,6 @@ function editActivity(date, index) {
 
 
 function loadActivitiesForDate(date) {
-    console.log("Loading activities for:", date);
 
     const activityList = document.getElementById("activitiesList");
     activityList.innerHTML = '';
@@ -331,7 +373,16 @@ function loadActivitiesForMonth(month, year) {
         for (let dbDate in data) {
             const parts = dbDate.split("-");
             const cellFormat = `${parts[0]}-${parseInt(parts[1])}-${parseInt(parts[2])}`;
-            formattedData[cellFormat] = data[dbDate];
+            formattedData[cellFormat] = data[dbDate].map(activity => ({
+                id: activity.id,
+                name: activity.name,
+                startTime: activity.startTime,
+                endTime: activity.endTime,
+                location: activity.location,
+                equipment: activity.equipment,
+                notes: activity.notes,
+                selectedStaff: activity.selectedStaff || []
+            }));
         }
 
         activities = {...activities, ...formattedData};
@@ -350,29 +401,53 @@ function loadActivitiesForMonth(month, year) {
 function saveActivityToServer() {
     const currentDate = document.getElementById("activityModal").dataset.currentDate;
 
-    fetch('scheduleManager.php', {
+    const activitiesForDate = activities[currentDate] || [];
+
+    const saveData = {
+        date: currentDate,
+        activities: activitiesForDate.map(activity => ({
+            id: activity.id || null,
+            name: activity.name,
+            startTime: activity.startTime,
+            endTime: activity.endTime,
+            location: activity.location,
+            equipment: activity.equipment,
+            notes: activity.notes,
+            selectedStaff: activity.selectedStaff || []
+        }))
+    };
+
+    return fetch('scheduleManager.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-            date: currentDate,
-            activities: activities[currentDate] || []
-        })
+        body: JSON.stringify(saveData)
     })
     .then(response => response.json())
     .then(data => {
         if (data.error) {
             console.error('Error saving:', data.error);
             alert('Failed to save: ' + data.error);
+            return null;
         } else {
             console.log('Saved successfully');
-            loadActivitiesForMonth(month, year);
+
+            if (data.activities && data.activities[currentDate]) {
+                activities[currentDate] = data.activities[currentDate].map((serverActivity, index) => ({
+                    ...activities[currentDate][index],
+                    id: serverActivity.id
+                }));
+                return data.activities[currentDate];
+            }
+
+            return null;
         }
     })
     .catch(error => {
         console.error('Fetch error:', error);
         alert('Error saving to database');
+        return null;
     });
 }
 
@@ -384,7 +459,6 @@ function getStaffAvailability(date, activityID) {
     fetch(`staffAvailability.php?date=${date}&activityID=${activityID}`)
     .then(response => response.json())
     .then(data => {
-        console.log("Received staff availability:", data);
         if (data && data.staff) {
             staffAvailability[date] = data;
             updateStaffAssignmentModal(date);
@@ -403,46 +477,165 @@ function updateStaffAssignmentModal(date) {
     if (!data) {
         return;
     }
-    
+
+    document.getElementById("selectedStaffList").innerHTML = "<h4>Selected Staff</h4>";
     document.getElementById("availableStaffList").innerHTML = "<h4>Available Staff</h4>";
     document.getElementById("conditionedStaffList").innerHTML = "<h4>Conditioned Staff</h4>";
     document.getElementById("unavailableStaffList").innerHTML = "<h4>Unavailable Staff</h4>";
 
     data.staff.forEach(staff => {
-        const staffElement = createStaffElement(staff);
+        const staffElement = createStaffElement(staff); 
+
+        if (selectedStaff.includes(String(staff.userID))) {
+            staffElement.classList.add("selected");
+            addToSelectedList(staff);
+        }
 
         if (staff.availability === "available") {
             document.getElementById("availableStaffList").appendChild(staffElement);
         } else if (staff.availability === "conditioned") {
             document.getElementById("conditionedStaffList").appendChild(staffElement);
         } else {
+            staffElement.classList.add("unavailable");
             document.getElementById("unavailableStaffList").appendChild(staffElement);
         }
     });
     window.otherAssignments = data.otherAssignments;
 }
 
-function createStaffElement(staff) {
+function createStaffElement(staff, isForSelectedList = false) {
     const div = document.createElement("div");
     div.className = "staff-item";
-    div.innerHTML = `
-        <input type="checkbox" ${staff.selected ? 'checked' : ''} ${staff.availability === 'unavailable' ? 'disabled' : ''}>
-        <div class="staff-info">
-            <div class="staff-name">${staff.firstName} ${staff.lastName}</div>
-            ${staff.conditions.length > 0 ? 
-                `<div class="staff-condition">⚠️ ${staff.conditions[0].reason}</div>` : ''}
-        </div>
+    div.dataset.userId = staff.userID;
+
+    if (staff.selected) {
+        div.classList.add("selected");
+    }        
+
+    const infoDiv = document.createElement("div");
+    infoDiv.className = "staff-info";
+    infoDiv.innerHTML = `
+        <div class="staff-name">${staff.firstName} ${staff.lastName}</div>
+        ${staff.conditions.length > 0 ? 
+            `<div class="staff-condition">⚠️ ${staff.conditions[0].reason}</div>` : ''}
     `;
+    div.appendChild(infoDiv);
+
+    if (!isForSelectedList) {
+        div.addEventListener("click", function() {
+            const userID = this.dataset.userId;
+            if (this.classList.contains("selected")) {
+                this.classList.remove("selected");
+                selectedStaff = selectedStaff.filter(id => String(id) !== String(userID));
+                removeFromSelectedList(userID);
+            } else {
+                if (staff.availability !== "unavailable") {
+                    this.classList.add("selected");
+                    selectedStaff.push(String(userID));
+                    addToSelectedList(staff);
+                }
+            }
+
+        });
+    
+    }
     return div;
 }
 
+function addToSelectedList(staff) {
+    const container = document.getElementById("selectedStaffList");
+    
+    const selectedElement = document.createElement("div");
+    selectedElement.className = "staff-item selected";
+    selectedElement.dataset.userId = staff.userID;
+    selectedElement.setAttribute("data-user-id", staff.userID);
+
+    const infoDiv = document.createElement("div");
+    infoDiv.className = "staff-info";
+    infoDiv.innerHTML = `<div class="staff-name">${staff.firstName} ${staff.lastName}</div>`;
+    selectedElement.appendChild(infoDiv);
+
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "remove-staff-btn";
+    removeBtn.textContent = "×";
+    removeBtn.addEventListener("click", function(e) {
+        e.stopPropagation();
+        removeStaff(staff.userID);
+    });
+    selectedElement.appendChild(removeBtn);
+
+    container.appendChild(selectedElement);
+    
+    selectedElement.style.display = "flex";
+}
+
+function removeFromSelectedList(userID) {
+    const container = document.getElementById("selectedStaffList");
+    const staffItem = container.querySelector(`.staff-item[data-user-id="${userID}"]`);
+    if (staffItem) {
+        container.removeChild(staffItem);
+    }
+}
+
+function removeStaff(staffID) {
+    selectedStaff = selectedStaff.filter(id => id !== staffID);
+    removeFromSelectedList(staffID);
+    const staffItem = document.querySelector(`.staff-item[data-user-id="${staffID}"]`);
+    if (staffItem) {
+        staffItem.classList.remove("selected");
+    }
+    updateActivityFormSelectedStaff();
+}
+
+function createStaffTag(staffID, displayName) {
+    const tag = document.createElement("span");
+    tag.className = "staff-tag";
+    tag.textContent = displayName;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "remove-staff-btn";
+    removeBtn.textContent = "×";
+    removeBtn.addEventListener("click", function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        removeStaff(staffID);
+    });
+    tag.appendChild(removeBtn);
+    return tag;
+}
+
+
+function updateActivityFormSelectedStaff() {
+    const container = document.getElementById("selectedStaffView");
+    container.innerHTML = '';
+
+    if (selectedStaff.length === 0) {
+        container.innerHTML = '<p class="no-staff">No staff assigned yet.</p>';
+        return;
+    }
+
+    const date = document.getElementById("activityModal").dataset.currentDate;
+    const staffDataAvailable = staffAvailability[date] && staffAvailability[date].staff;
+
+    selectedStaff.forEach(staffID => {
+        let displayName;
+        
+        if (staffDataAvailable) {
+            const staffData = staffAvailability[date].staff.find(s => String(s.userID) === String(staffID));
+            displayName = staffData ? `${staffData.firstName} ${staffData.lastName}` : `Staff ID: ${staffID}`;
+        } else {
+            displayName = `Staff ID: ${staffID}`;
+        }
+        
+        container.appendChild(createStaffTag(staffID, displayName));
+    });
+}
+
 document.getElementById("assignStaffBtn").addEventListener("click", function() {
-    console.log("Assign Staff button clicked");
     document.getElementById("staffAssignmentModal").classList.add("active");
 
     const date = document.getElementById("activityModal").dataset.currentDate;
     const activityID = document.getElementById("activityModal").dataset.activityID || 0;
-    console.log("Date:", date, "Activity ID:", activityID);
 
     getStaffAvailability(date, activityID);
 });
@@ -455,3 +648,41 @@ document.getElementById("closeStaffAssignmentModal").addEventListener("click", f
 document.getElementById("cancelStaffAssignmentBtn").addEventListener("click", function() {
     document.getElementById("staffAssignmentModal").classList.remove("active");
 });
+
+document.getElementById("saveStaffAssignments").addEventListener("click", function() {
+    updateActivityFormSelectedStaff();
+
+    const activityID = document.getElementById("activityModal").dataset.activityID;
+    if (activityID) {
+        saveStaffAssignments(activityID, selectedStaff);
+    }
+    document.getElementById("staffAssignmentModal").classList.remove("active");
+});
+
+function saveStaffAssignments(activityID, staffIDs) {
+    if (!activityID) {
+        return;
+    }
+
+    fetch('staffAvailability.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            activityID: activityID,
+            staffIds: staffIDs
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            console.error("Error saving staff assignments:", data.error);
+        } else {
+            console.log("Staff assignments saved successfully.");
+        }
+    })
+    .catch(error => {
+        console.error("Error saving staff assignments:", error);
+    });
+}

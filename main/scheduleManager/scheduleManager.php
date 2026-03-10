@@ -29,7 +29,14 @@
         
         if ($date) {
 
-            $stmt = $connection->prepare("SELECT id, name, start_time, end_time, staff_required, location, equipment, notes FROM activities WHERE userID = ? AND activity_date = ?");
+            $stmt = $connection->prepare("
+                SELECT a.id, a.name, a.startTime, a.endTime, a.location, a.equipment, a.notes,
+                    GROUP_CONCAT(aa.userID) as assigned_staff
+                FROM activities a
+                LEFT JOIN activityassignments aa ON a.id = aa.activityID
+                WHERE a.userID = ? AND a.activityDate = ?
+                GROUP BY a.id
+            ");
             $stmt->bind_param("is", $userID, $date);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -39,9 +46,8 @@
                 $activities[] = [
                     "id" => $row['id'],
                     "name" => $row['name'],
-                    "startTime" => $row['start_time'],
-                    "endTime" => $row['end_time'],
-                    "staffRequired" => $row['staff_required'],
+                    "startTime" => $row['startTime'],
+                    "endTime" => $row['endTime'],
                     "location" => $row['location'],
                     "equipment" => $row['equipment'],
                     "notes" => $row['notes']
@@ -56,26 +62,33 @@
             $startDate = "$year-$monthNum-01";
             $endDate = date("Y-m-t", strtotime($startDate));
             
-            $stmt = $connection->prepare("SELECT id, name, start_time, end_time, staff_required, location, equipment, notes, activity_date FROM activities WHERE userID = ? AND activity_date BETWEEN ? AND ?");
+            $stmt = $connection->prepare("
+                SELECT a.id, a.name, a.startTime, a.endTime, a.location, a.equipment, a.notes, a.activityDate,
+                    GROUP_CONCAT(aa.userID) as assigned_staff
+                FROM activities a
+                LEFT JOIN activityassignments aa ON a.id = aa.activityID
+                WHERE a.userID = ? AND a.activityDate BETWEEN ? AND ?
+                GROUP BY a.id
+            ");
             $stmt->bind_param("iss", $userID, $startDate, $endDate);
             $stmt->execute();
             $result = $stmt->get_result();
             
             $activities = [];
             while ($row = $result->fetch_assoc()) {
-                $date = $row['activity_date'];
+                $date = $row['activityDate'];
                 if (!isset($activities[$date])) {
                     $activities[$date] = [];
                 }
                 $activities[$date][] = [
                     "id" => $row['id'],
                     "name" => $row['name'],
-                    "startTime" => $row['start_time'],
-                    "endTime" => $row['end_time'],
-                    "staffRequired" => $row['staff_required'],
+                    "startTime" => $row['startTime'],
+                    "endTime" => $row['endTime'],
                     "location" => $row['location'],
                     "equipment" => $row['equipment'],
-                    "notes" => $row['notes']
+                    "notes" => $row['notes'],
+                    "selectedStaff" => $row['assigned_staff'] ? explode(',', $row['assigned_staff']) : []
                 ];
             }
             
@@ -100,27 +113,39 @@
         $activities = $data['activities'];
 
         $connection->begin_transaction();
-        //delete existing data
+  
         try {
-            $deleteStmt = $connection->prepare("DELETE FROM activities WHERE userID = ? AND activity_date = ?");
+
+            $getIDsStmt = $connection->prepare("SELECT id FROM activities WHERE userID = ? AND activityDate = ?");
+            $getIDsStmt->bind_param("is", $userID, $date);
+            $getIDsStmt->execute();
+            $result = $getIDsStmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+                $deleteAssignmentsStmt = $connection->prepare("DELETE FROM activityassignments WHERE activityID = ?");
+                $deleteAssignmentsStmt->bind_param("i", $row['id']);
+                $deleteAssignmentsStmt->execute();
+            }
+
+
+            $deleteStmt = $connection->prepare("DELETE FROM activities WHERE userID = ? AND activityDate = ?");
             $deleteStmt->bind_param("is", $userID, $date);
             $deleteStmt->execute();
 
             if (!empty($activities)) {
                 $insertStmt = $connection->prepare(
-                    "INSERT INTO activities (userID, activity_date, name, start_time, end_time, staff_required, location, equipment, notes) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    "INSERT INTO activities (userID, activityDate, name, startTime, endTime, location, equipment, notes) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
                 );
 
                 foreach ($activities as $activity) {
                     $insertStmt->bind_param(
-                        "issssisss",
+                        "isssssss",
                         $userID,
                         $date,
                         $activity['name'],
                         $activity['startTime'],
                         $activity['endTime'],
-                        $activity['staffRequired'],
                         $activity['location'],
                         $activity['equipment'],
                         $activity['notes']
@@ -130,7 +155,30 @@
             }
 
             $connection->commit();
-            echo json_encode(["success" => true]);
+
+            $selectStmt = $connection->prepare("SELECT id FROM activities WHERE userID = ? AND activityDate = ?");
+            $selectStmt->bind_param("is", $userID, $date);
+            $selectStmt->execute();
+            $result = $selectStmt->get_result();
+
+            $savedActivities = [];
+            while ($row = $result->fetch_assoc()) {
+                $savedActivities[] = [
+                    "id" => $row['id'],
+                    "name" => $activity['name'],
+                    "startTime" => $activity['startTime'],
+                    "endTime" => $activity['endTime'],
+                    "location" => $activity['location'],
+                    "equipment" => $activity['equipment'],
+                    "notes" => $activity['notes']
+                ];
+            }
+
+            echo json_encode([
+                "success" => true,
+                "activities" => [$date => $savedActivities]
+            ]);
+            exit();
 
         } catch (Exception $e) {
             $connection->rollback();

@@ -55,7 +55,6 @@
         </div>
 
         <div id="scheduleManagerContent" class="schedule-manager-content">
-            <!-- Schedule content will be dynamically generated here -->
         </div>
 
         <div id="activityModal" class="activity-modal">
@@ -67,13 +66,11 @@
                 
                 <div class="activity-modal-body">
                     <div class="activities-list" id="activitiesList">
-                        <!-- Activities will be listed here -->
                         <p class="no-activities">No activities scheduled for this day.</p>
                     </div>
                     
                     <button id="addActivityBtn" class="add-activity-btn">+ Add Activity</button>
                     
-                    <!-- Add Activity Form (hidden by default) -->
                     <div id="activityForm" class="activity-form" style="display: none;">
                         <h4>New Activity</h4>
                         
@@ -96,10 +93,10 @@
                         <textarea id="activityNotes" rows="3"></textarea>
 
                         <button id="assignStaffBtn" class="assign-staff-btn">Assign Staff</button>
-                        <div id= "selectedStaffContainer" class="selected-staff-container">
+                        <div id="selectedStaffContainer" class="selected-staff-container">
                             <h4>Assigned Staff:</h4>
-                            <div id="selectedStaffView" class="selected-staff-list">
-                                <!-- Selected staff will be displayed here -->
+                            <div id="selectedStaffView" class="selected-staff-view">
+                                <p class="no-staff">No staff assigned yet.</p>
                             </div>
                         </div>
                         <div class="form-buttons">
@@ -111,35 +108,34 @@
             </div>
         </div>
 
-        <div id="staffAssignmentModal" class="staff-assignment-modal" style="display: none;">
-            <div class="staff-assignment-modal-header">
-                <h3 id="staffAssignmentTitle">Assign Staff</h3>
-                <button id="closeStaffAssignmentModal" class="close-modal">&times;</button>
-            </div>
-
+        <div id="staffAssignmentModal" class="staff-assignment-modal">
             <div class="staff-assignment-modal-content">
+                <div class="staff-assignment-modal-header">
+                    <h3 id="staffAssignmentTitle">Assign Staff</h3>
+                    <button id="closeStaffAssignmentModal" class="close-modal">&times;</button>
+                </div>
+
                 <div id="staffListContainer" class="staff-list-container">
-    
                     <div id="selectedStaffList" class="selected-staff-list">
-                        <!-- Selected staff will be displayed here -->
+                        <h4>Selected Staff</h4>
                     </div>
 
                     <div id="availableStaffList" class="available-staff-list">
-                        <!-- Available staff will be listed here -->
+                        <h4>Available Staff</h4>
                     </div>
 
-                    <div id="conditionedStaffList" class="unavailable-staff-list">
-                        <!-- Unavailable staff will be listed here -->
+                    <div id="conditionedStaffList" class="conditioned-staff-list">
+                        <h4>Conditioned Staff</h4>
                     </div>
 
                     <div id="unavailableStaffList" class="unavailable-staff-list">
-                        <!-- Unavailable staff will be listed here -->
+                        <h4>Unavailable Staff</h4>
                     </div>
                 </div>
 
                 <div class="form-buttons">
                     <button id="saveStaffAssignments" class="save-btn">Save Assignments</button>
-                    <button id="cancelStaffBtn" class="cancel-btn">Cancel</button>
+                    <button id="cancelStaffAssignmentBtn" class="cancel-btn">Cancel</button>
                 </div>
             </div>
         </div>
