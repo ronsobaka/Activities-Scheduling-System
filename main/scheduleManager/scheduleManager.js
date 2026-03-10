@@ -165,6 +165,7 @@ document.getElementById("saveActivityBtn").addEventListener("click", function() 
 
     const currentDate = document.getElementById("activityModal").dataset.currentDate;
     const activityID = document.getElementById("activityModal").dataset.activityID;
+    const originalSelectedStaff = JSON.parse(document.getElementById("activityModal").dataset.originalSelectedStaff || "[]");
 
     if (!activities[currentDate]) {
         activities[currentDate] = [];
@@ -186,6 +187,7 @@ document.getElementById("saveActivityBtn").addEventListener("click", function() 
         console.log("Saved activities from server:", savedActivities);
         console.log("editingIndex:", editingIndex);
         console.log("selectedStaff:", selectedStaff);
+        console.log("activityID from modal:", activityID);
         
         // For NEW activities (no editingIndex) with staff selected
         if (savedActivities && savedActivities.length > 0 && !editingIndex && selectedStaff.length > 0) {
@@ -193,14 +195,41 @@ document.getElementById("saveActivityBtn").addEventListener("click", function() 
             console.log("New activity ID:", newActivityID);
             if (newActivityID) {
                 saveStaffAssignments(newActivityID, selectedStaff);
+            } else {
+                console.log("New activity ID is null/undefined");
+            }
+        } else if (activityID && selectedStaff.length > 0 && editingIndex !== undefined) {
+
+            // EXISTING activity
+            const index = parseInt(editingIndex);
+            const updatedActivityID = savedActivities[index]?.id;
+            
+            if (!updatedActivityID){
+                return;
+            } 
+            
+            // Check what changed
+            const currentSorted = [...selectedStaff].sort();
+            const originalSorted = [...originalSelectedStaff].sort();
+            const staffChanged = JSON.stringify(currentSorted) !== JSON.stringify(originalSorted);
+            
+            if (staffChanged && selectedStaff.length > 0) {
+                // Staff changed and there are staff selected
+                console.log("Staff assignments changed, saving...");
+                saveStaffAssignments(updatedActivityID, selectedStaff);
+            } else if (staffChanged && selectedStaff.length === 0 && originalSelectedStaff.length > 0) {
+                // All staff were removed
+                console.log("All staff removed, clearing...");
+                saveStaffAssignments(updatedActivityID, []);
+            } else {
+                // No changes - do nothing
+                console.log("No changes to staff, skipping save");
+                saveStaffAssignments(updatedActivityID, selectedStaff);
             }
         }
-        // For EXISTING activities with staff selected
-        else if (activityID && selectedStaff.length > 0) {
-            console.log("Existing activity ID:", activityID);
-            saveStaffAssignments(activityID, selectedStaff);
-        }
     });
+
+    delete document.getElementById("activityModal").dataset.originalSelectedStaff;
 
     clearForm();
 
@@ -221,6 +250,9 @@ function editActivity(date, index) {
     document.getElementById("activityModal").dataset.activityID = activity.id || '';
     document.getElementById("activityModal").dataset.editingIndex = index;
 
+    const originalSelectedStaff = activity.selectedStaff ? [...activity.selectedStaff] : [];
+    document.getElementById("activityModal").dataset.originalSelectedStaff = JSON.stringify(originalSelectedStaff);
+
     if (activity.selectedStaff && activity.selectedStaff.length > 0) {
         selectedStaff = [...activity.selectedStaff];
     } else {
@@ -233,17 +265,18 @@ function editActivity(date, index) {
     // Then fetch real names and update when available
     const activityID = activity.id || 0;
     fetch(`staffAvailability.php?date=${date}&activityID=${activityID}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data && data.staff) {
-                staffAvailability[date] = data;
-                // Update the display with real names
-                updateActivityFormSelectedStaff();
-            }
-        })
-        .catch(error => {
-            console.error("Error fetching staff availability:", error);
-        });
+    .then(response => response.json())
+    .then(data => {
+        if (data && data.staff) {
+            staffAvailability[date] = data;
+            // Update the display with real names
+            updateActivityFormSelectedStaff();
+        }
+    })
+    .catch(error => {
+        console.error("Error fetching staff availability:", error);
+    });
+    
 
     document.getElementById("activityForm").style.display = "block";
     document.getElementById("addActivityBtn").style.display = "none";
@@ -434,10 +467,25 @@ function saveActivityToServer() {
             console.log('Saved successfully');
 
             if (data.activities && data.activities[currentDate]) {
-                activities[currentDate] = data.activities[currentDate].map((serverActivity, index) => ({
-                    ...activities[currentDate][index],
-                    id: serverActivity.id
-                }));
+                activities[currentDate] = data.activities[currentDate].map((serverActivity, index) => {
+                    const originalActivity = activities[currentDate][index] || {};
+                        return {
+                            id: serverActivity.id,
+                            name: serverActivity.name,
+                            startTime: serverActivity.startTime,
+                            endTime: serverActivity.endTime,
+                            location: serverActivity.location,
+                            equipment: serverActivity.equipment,
+                            notes: serverActivity.notes,
+                            selectedStaff: originalActivity.selectedStaff || []
+                        
+                        }
+                    });
+
+                if (activities[currentDate].length > 0) {
+                    const lastActivity = activities[currentDate][activities[currentDate].length - 1];
+                    document.getElementById("activityModal").dataset.activityID = lastActivity.id;
+                }
                 return data.activities[currentDate];
             }
 
@@ -651,11 +699,6 @@ document.getElementById("cancelStaffAssignmentBtn").addEventListener("click", fu
 
 document.getElementById("saveStaffAssignments").addEventListener("click", function() {
     updateActivityFormSelectedStaff();
-
-    const activityID = document.getElementById("activityModal").dataset.activityID;
-    if (activityID) {
-        saveStaffAssignments(activityID, selectedStaff);
-    }
     document.getElementById("staffAssignmentModal").classList.remove("active");
 });
 

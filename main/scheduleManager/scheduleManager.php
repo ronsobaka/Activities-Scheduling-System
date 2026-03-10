@@ -50,7 +50,8 @@
                     "endTime" => $row['endTime'],
                     "location" => $row['location'],
                     "equipment" => $row['equipment'],
-                    "notes" => $row['notes']
+                    "notes" => $row['notes'],
+                    "selectedStaff" => $row['assigned_staff'] ? explode(',', $row['assigned_staff']) : []
                 ];
             }
 
@@ -156,7 +157,7 @@
 
             $connection->commit();
 
-            $selectStmt = $connection->prepare("SELECT id FROM activities WHERE userID = ? AND activityDate = ?");
+            $selectStmt = $connection->prepare("SELECT id, name, startTime, endTime, location, equipment, notes FROM activities WHERE userID = ? AND activityDate = ?");
             $selectStmt->bind_param("is", $userID, $date);
             $selectStmt->execute();
             $result = $selectStmt->get_result();
@@ -165,12 +166,12 @@
             while ($row = $result->fetch_assoc()) {
                 $savedActivities[] = [
                     "id" => $row['id'],
-                    "name" => $activity['name'],
-                    "startTime" => $activity['startTime'],
-                    "endTime" => $activity['endTime'],
-                    "location" => $activity['location'],
-                    "equipment" => $activity['equipment'],
-                    "notes" => $activity['notes']
+                    "name" => $row['name'],
+                    "startTime" => $row['startTime'],
+                    "endTime" => $row['endTime'],
+                    "location" => $row['location'],
+                    "equipment" => $row['equipment'],
+                    "notes" => $row['notes']
                 ];
             }
 
