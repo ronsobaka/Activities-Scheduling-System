@@ -14,18 +14,18 @@
 </head>
 <body>
     <div class="topnav">
-        <a class="active">Home</a>
+        <a>Home</a>
         <a href="availability/availabilityHTML.php">Availability</a>
         <?php if ($_SESSION['isManager']): ?>
             <a href="scheduleManager/scheduleManagerHTML.php">Schedule Manager</a>
             <div class="dropdown">
             <button class="dropBtn">Manage ▼</button>
             <div class="dropdown-content">
-                <a href="approveStaff/approveStaffHTML.php">Approve Staff</a>
-                <a href="systemSettings/systemSettingsHTML.php">System Settings</a>
+                <a href="#approveStaff">Approve Staff</a>
             </div>
         </div> 
         <?php endif; ?>
+        <a href="#about">Upcoming shifts</a>
     </div>
     <div class="divider"></div>
     <div class="title">

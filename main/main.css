@@ -39,10 +39,12 @@ input, textarea {
 .topnav {
     width: 100%;
     background: linear-gradient(to right, #7aa9b8, #1c0696);
-    overflow: hidden;
+    overflow: visible;
     display: flex;
     justify-content: center;
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    height: auto;
+    min-height: 50px;
 }
 
 .topnav a {
@@ -510,8 +512,18 @@ input, textarea {
     margin-top: 5px;
 }
 
-.dropdown:hover .dropdown-content {
+.dropdown:hover .dropdown-content, .dropdown-content:hover {
     display: block;
+}
+
+.dropdown::after {
+    content: '';
+    position: absolute;
+    height: 10px;
+    width: 100%;
+    bottom: -10px;
+    left: 0;
+    background: transparent;
 }
 
 .dropdown-content a {

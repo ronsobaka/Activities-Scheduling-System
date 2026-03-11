@@ -18,16 +18,17 @@
 <body>
     <div class="topnav">
         <a href="../main.php">Home</a>
-        <a class="active" href="#news">Availability</a>
+        <a class="active">Availability</a>
         <?php if ($_SESSION['isManager']): ?>
             <a href="../scheduleManager/scheduleManagerHTML.php">Schedule Manager</a>
-        <?php endif; ?>
-        <div class="dropdown">
-            <button class="dropBtn">Manage ▼</button>
-            <div class="dropdown-content">
-                <a href="#approveStaff">Approve Staff</a>
-            </div>
-        </div>        
+            <div class="dropdown">
+                <button class="dropBtn">Manage ▼</button>
+                <div class="dropdown-content">
+                    <a href="../approveStaff/approveStaffHTML.php">Approve Staff</a>
+                    <a href="../systemSettings/systemSettingsHTML.php">System Settings</a>  
+                </div>
+            </div> 
+        <?php endif; ?>        
         <a href="#about">About</a>
     </div>
     <div class="divider"></div>
