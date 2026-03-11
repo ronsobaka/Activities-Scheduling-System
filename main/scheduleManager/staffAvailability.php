@@ -1,6 +1,6 @@
 <?php
     error_reporting(E_ALL);
-    ini_set('display_errors', 0);
+    ini_set('display_errors', 1);
     ob_clean();
     session_start();
     require_once '../../globalFunctions.php';
@@ -80,7 +80,12 @@
 
         $staffAvailability = [];
 
-        $allStaffQuery = "SELECT userID, firstName, lastName FROM user WHERE roleID = 3";
+        $allStaffQuery = "
+            SELECT u.userID, u.firstName, u.lastName, u.roleID, r.colour as roleColour 
+            FROM user u 
+            LEFT JOIN roles r ON u.roleID = r.roleID 
+            WHERE u.status = 'active'
+        ";
         $stmt = $connection->prepare($allStaffQuery);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -90,6 +95,7 @@
                 "userID" => $row['userID'],
                 "firstName" => $row['firstName'],
                 "lastName" => $row['lastName'],
+                "roleColour"=> $row['roleColour'] ?? '#1c0696',
                 "availability" => "available",
                 "selected" => false,
                 "conditions" => []
@@ -170,4 +176,4 @@
         echo json_encode($response);
         exit();
     }
-?>s
+?>

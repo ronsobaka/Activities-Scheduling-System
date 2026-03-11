@@ -29,7 +29,12 @@
         <?php if ($_SESSION['isManager']): ?>
             <a class="active" href="../scheduleManager/scheduleManagerHTML.php">Schedule Manager</a>
         <?php endif; ?>
-        <a href="#contact">Contact</a>
+        <div class="dropdown">
+            <button class="dropBtn">Manage ▼</button>
+            <div class="dropdown-content">
+                <a href="#approveStaff">Approve Staff</a>
+            </div>
+        </div>
         <a href="#about">About</a>
     </div>
     <div class="divider"></div>

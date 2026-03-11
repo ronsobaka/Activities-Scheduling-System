@@ -22,7 +22,12 @@
         <?php if ($_SESSION['isManager']): ?>
             <a href="../scheduleManager/scheduleManagerHTML.php">Schedule Manager</a>
         <?php endif; ?>
-        <a href="#contact">Contact</a>
+        <div class="dropdown">
+            <button class="dropBtn">Manage ▼</button>
+            <div class="dropdown-content">
+                <a href="#approveStaff">Approve Staff</a>
+            </div>
+        </div>        
         <a href="#about">About</a>
     </div>
     <div class="divider"></div>
@@ -66,7 +71,7 @@
 				<div id="conditionForm" class="condition-form">
 					<input type="time" id="conditionStart" class="condition-input" value="09:00">
 					<input type="time" id="conditionEnd" class="condition-input" value="17:00">
-					<input type="text" id="conditionReason" class="condition-input" placeholder="Enter Reason:" required>
+					<input type="text" id="conditionReason" class="condition-input" placeholder="Enter Reason: e.g. Dentist, Morning only" required>
 					<button id="saveConditionBtn" class="save-btn">Add</button>
 				</div>
 

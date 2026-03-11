@@ -409,8 +409,8 @@ function loadActivitiesForMonth(month, year) {
             formattedData[cellFormat] = data[dbDate].map(activity => ({
                 id: activity.id,
                 name: activity.name,
-                startTime: activity.startTime,
-                endTime: activity.endTime,
+                startTime: activity.startTime.substring(0, 5),
+                endTime: activity.endTime.substring(0, 5),
                 location: activity.location,
                 equipment: activity.equipment,
                 notes: activity.notes,
@@ -556,6 +556,11 @@ function createStaffElement(staff, isForSelectedList = false) {
     div.className = "staff-item";
     div.dataset.userId = staff.userID;
 
+    if (staff.roleColour) {
+        div.style.backgroundColor = staff.roleColour + '75';
+        div.style.borderLeftColor = staff.roleColour;
+    }
+
     if (staff.selected) {
         div.classList.add("selected");
     }        
@@ -598,9 +603,18 @@ function addToSelectedList(staff) {
     selectedElement.dataset.userId = staff.userID;
     selectedElement.setAttribute("data-user-id", staff.userID);
 
+    if (staff.roleColor) {
+        selectedElement.style.backgroundColor = staff.roleColor + '75';
+        selectedElement.style.borderLeftColor = staff.roleColor;
+    }
+
     const infoDiv = document.createElement("div");
     infoDiv.className = "staff-info";
-    infoDiv.innerHTML = `<div class="staff-name">${staff.firstName} ${staff.lastName}</div>`;
+    if (staff.conditions && staff.conditions.length > 0) {
+        infoDiv.innerHTML = `<div class="staff-name">${staff.firstName} ${staff.lastName} ⚠️ ${staff.conditions[0].reason}</div>`
+    } else {
+        infoDiv.innerHTML = `<div class="staff-name">${staff.firstName} ${staff.lastName} </div>`;
+    }
     selectedElement.appendChild(infoDiv);
 
     const removeBtn = document.createElement("button");
@@ -667,15 +681,23 @@ function updateActivityFormSelectedStaff() {
 
     selectedStaff.forEach(staffID => {
         let displayName;
+        let warningText = "";
         
         if (staffDataAvailable) {
             const staffData = staffAvailability[date].staff.find(s => String(s.userID) === String(staffID));
-            displayName = staffData ? `${staffData.firstName} ${staffData.lastName}` : `Staff ID: ${staffID}`;
+            if (staffData) {
+                if (staffData.conditions && staffData.conditions.length > 0) {
+                    warningText = ` ⚠️ ${staffData.conditions[0].reason}`;
+                }
+                displayName =  `${staffData.firstName} ${staffData.lastName}`;
+            } else {
+                displayName = `Staff ID: ${staffID}`;
+            }
         } else {
             displayName = `Staff ID: ${staffID}`;
         }
         
-        container.appendChild(createStaffTag(staffID, displayName));
+        container.appendChild(createStaffTag(staffID, displayName + warningText));
     });
 }
 

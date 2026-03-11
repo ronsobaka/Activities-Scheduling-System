@@ -492,6 +492,16 @@
     width: 100%;
 }
 
+#selectedStaffList .staff-item.selected {
+    background-color: transparent;
+    border-left: 4px solid; 
+}
+
+
+#selectedStaffList .staff-item.selected {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.3) 0%, rgba(40, 167, 69, 0.1) 100%);
+}
+
 .staff-tag {
     background: #1c0696;
     color: white;
