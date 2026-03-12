@@ -27,12 +27,12 @@
 
         header('Content-Type: application/json');
         echo json_encode($users);
-    } else if ($_SERVER['REQUEST_METHOD']) {
+    } else if ($_SERVER['REQUEST_METHOD'] === "POST") {
         $data = json_decode(file_get_contents("php://input"), true);
         $userID = $data['userID'];
         $newStatus = $data['newStatus'];
 
-        $query = "UPDATE user SET status = ? WHERE userID = ?"
+        $query = "UPDATE user SET status = ? WHERE userID = ?";
         $stmt = $connection->prepare($query);
         $stmt->bind_param("si", $newStatus, $userID);
 

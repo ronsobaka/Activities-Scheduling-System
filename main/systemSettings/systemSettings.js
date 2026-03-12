@@ -69,6 +69,31 @@ function editUser(userID) {
 
 function toggleUserStatus(userID, event) {
     const button = event.target;
-    const currentStatus = button.textContent.trim() === 'Disable' ? 'active' : 'inactive';
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    const currentStatus = button.textContent.trim() === 'Disable' ? 'active' : 'disabled';
+    const newStatus = currentStatus === 'active' ? 'disabled' : 'active';
+
+    if (confirm(`Are you sure you want to ${newStatus === 'active' ? 'active' : 'disabled'} this member of staff?`)) {
+        fetch('phpRequests/userManagement.php',{
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userID: userID,
+                newStatus: newStatus
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadUsers()
+            } else {
+                alert("Error updating user status: " + data.error);
+            }
+        })
+        .catch(error => {
+            console.error("Error: ", error);
+            alert('Failed to update user status');
+        });
+    }
 }

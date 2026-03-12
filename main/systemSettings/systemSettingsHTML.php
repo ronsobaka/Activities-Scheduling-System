@@ -78,6 +78,59 @@
                             <!-- Your user data here -->
                         </tbody>
                     </table>
+
+                    <!-- Edit User Modal -->
+                    <div class="modal fade" id="editUserModal" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Edit User</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="editUserForm">
+                                        <input type="hidden" id="editUserID">
+                                        
+                                        <div class="mb-3">
+                                            <label for="editFirstName" class="form-label">First Name</label>
+                                            <input type="text" class="form-control" id="editFirstName" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="editLastName" class="form-label">Last Name</label>
+                                            <input type="text" class="form-control" id="editLastName" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="editEmail" class="form-label">Email</label>
+                                            <input type="email" class="form-control" id="editEmail" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="editRole" class="form-label">Role</label>
+                                            <select class="form-select" id="editRole">
+                                                <option value="">Select Role</option>
+                                                <!-- Roles will be loaded dynamically -->
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="editStatus" class="form-label">Status</label>
+                                            <select class="form-select" id="editStatus">
+                                                <option value="active">Active</option>
+                                                <option value="disabled">Disabled</option>
+                                                <option value="pending">Pending</option>
+                                            </select>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-primary" onclick="saveUserChanges()">Save Changes</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
