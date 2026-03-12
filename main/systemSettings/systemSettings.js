@@ -15,14 +15,49 @@ function loadUsers() {
     .then(response => response.json())
     .then(users => {
         allUsers = users;
-        displayUsers
+        displayUsers(users)
     })
-    .catch(error => console.error("Error loading users:", error));
+    .catch(error => console.error("Error loading staff:", error));
+}
+
+function displayUsers(users) {
+    const tbody = document.querySelector("tbody");
+    tbody.innerHTML = "";
+
+    users.forEach(user=> {
+        const row = document.createElement("tr");
+
+        const isActive = user.status === "active";
+        const buttonClass = isActive ? "btn-danger" : "btn-success";
+        const buttonText = isActive ? "Disable" : "Enable";
+        row.innerHTML = `
+            <td>${escapeHtml(user.firstName)} ${escapeHtml(user.lastName)}</td>
+            <td>${escapeHtml(user.email)}</td>
+            <td>${escapeHtml(user.roleName || 'No Role')}</td>
+            <td>
+                <button class="btn btn-sm btn-primary" onclick="editUser(${user.userID})">Edit</button>
+                <button class="btn btn-sm ${buttonClass}" onclick="toggleUserStatus(${user.userID}, event)">${buttonText}</button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    })
+}
+
+function filterUsers(searchText) {
+    const filtered = allUsers.filter(user => {
+        const fullName = `${user.firstName} ${user.lastName}` .toLowerCase();
+        const email = user.email.toLowerCase();
+        const search = searchText.toLowerCase();
+
+        return fullName.includes(search) || email.includes(search);
+    })
+
+    displayUsers(filtered);
 }
 
 // Helper function to prevent XSS
 function escapeHtml(text) {
-    const div = document.createElement('div');
+    const div = document.createElement('tr');
     div.textContent = text;
     return div.innerHTML;
 }
@@ -32,7 +67,8 @@ function editUser(userID) {
     // Open edit modal
 }
 
-function toggleUserStatus(userID) {
-    console.log('Toggle status for user:', userID);
-    // Toggle user status
+function toggleUserStatus(userID, event) {
+    const button = event.target;
+    const currentStatus = button.textContent.trim() === 'Disable' ? 'active' : 'inactive';
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
 }

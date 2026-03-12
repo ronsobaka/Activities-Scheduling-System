@@ -42,7 +42,7 @@
         <!-- Sidebar -->
         <div class="col-md-3">
             <div class="list-group">
-                <a href="#" class="list-group-item list-group-item-action active">User Management</a>
+                <a href="#" class="list-group-item list-group-item-action active">Staff Management</a>
                 <a href="#" class="list-group-item list-group-item-action">Role Management</a>
                 <a href="#" class="list-group-item list-group-item-action">Permissions</a>
                 <a href="#" class="list-group-item list-group-item-action">System Settings</a>
@@ -53,7 +53,7 @@
         <div class="col-md-9">
             <div class="card">
                 <div class="card-header">
-                    <h4>User Management</h4>
+                    <h4>Staff Management</h4>
                 </div>
                 <div class="card-body">
                     <!-- Search Bar -->
