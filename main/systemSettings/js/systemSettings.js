@@ -29,6 +29,8 @@ document.addEventListener("DOMContentLoaded", function() {
                     break;
                 case 'permissions':
                     document.getElementById('permissionsCard').style.display = 'block';
+                    if (typeof loadPermissionsRoles === 'function') loadPermissionsRoles();
+                    if (typeof loadFeatures === 'function') loadFeatures();
                     break;
                 case 'system':
                     document.getElementById('systemSettingsCard').style.display = 'block';

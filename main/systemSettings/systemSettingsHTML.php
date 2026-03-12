@@ -188,14 +188,37 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Permissions Card -->
             <div id="permissionsCard" class="card" style="display: none;">
                 <div class="card-header">
-                    <h4>Permissions</h4>
+                    <h4>Role Permissions</h4>
                 </div>
                 <div class="card-body">
-                    <p>Permissions management coming soon...</p>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <select class="form-select" id="permissionRoleSelect">
+                                <option value="">Select a role</option>
+                                <!-- Roles will be loaded here -->
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="permissionsTable" style="display: none;">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>Description</th>
+                                    <th>Access</th>
+                                </tr>
+                            </thead>
+                            <tbody id="permissionsTableBody">
+                                <!-- Permissions will be loaded here -->
+                            </tbody>
+                        </table>
+                        <button class="btn btn-primary" onclick="savePermissions()">Save Permissions</button>
+                    </div>
                 </div>
             </div>
 
@@ -218,5 +241,6 @@
     <script src="js/systemSettings.js"></script>
     <script src="js/userManagement.js"></script>
     <script src="js/roleManagement.js"></script>
+    <script src="js/permissionManagement.js"></script>
 </body>
 </html>
