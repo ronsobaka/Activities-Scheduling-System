@@ -7,6 +7,10 @@
     user-select: none;
 }
 
+html {
+    overflow-y: scroll;
+}
+
 input, textarea {
     -webkit-user-select: text;
     -moz-user-select: text;

@@ -21,7 +21,7 @@
         <a href="../mainHTML.php">Home</a>
         <a href="../availability/availabilityHTML.php">Availability</a>
         <?php if ($_SESSION['isManager']): ?>
-            <a href="scheduleManager/scheduleManagerHTML.php">Schedule Manager</a>
+            <a href="../scheduleManager/scheduleManagerHTML.php">Schedule Manager</a>
             <div class="dropdown">
             <button class="dropBtn">Manage ▼</button>
             <div class="dropdown-content">
@@ -42,16 +42,17 @@
         <!-- Sidebar -->
         <div class="col-md-3">
             <div class="list-group">
-                <a href="#" class="list-group-item list-group-item-action active">Staff Management</a>
-                <a href="#" class="list-group-item list-group-item-action">Role Management</a>
-                <a href="#" class="list-group-item list-group-item-action">Permissions</a>
-                <a href="#" class="list-group-item list-group-item-action">System Settings</a>
+                <a href="#" class="list-group-item list-group-item-action active" data-card="staff">Staff Management</a>
+                <a href="#" class="list-group-item list-group-item-action" data-card="roles">Role Management</a>
+                <a href="#" class="list-group-item list-group-item-action" data-card="permissions">Permissions</a>
+                <a href="#" class="list-group-item list-group-item-action" data-card="system">System Settings</a>
             </div>
         </div>
         
         <!-- Main Content -->
         <div class="col-md-9">
-            <div class="card">
+            <!-- Staff Management Card -->
+            <div id="staffManagementCard" class="card">
                 <div class="card-header">
                     <h4>Staff Management</h4>
                 </div>
@@ -74,7 +75,7 @@
                                 <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="usersTableBody">
                             <!-- Your user data here -->
                         </tbody>
                     </table>
@@ -109,7 +110,6 @@
                                         <div class="mb-3">
                                             <label for="editRole" class="form-label">Role</label>
                                             <select class="form-select" id="editRole">
-                                                <option value="">Select Role</option>
                                                 <!-- Roles will be loaded dynamically -->
                                             </select>
                                         </div>
@@ -133,11 +133,90 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Role Management Card -->
+            <div id="roleManagementCard" class="card" style="display: none;">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4>Role Management</h4>
+                    <button class="btn btn-primary" onclick="showAddRoleModal()">Add New Role</button>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Role Name</th>
+                                <th>Description</th>
+                                <th>Colour</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rolesTableBody">
+                            <!-- Roles will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Add/Edit Role Modal -->
+            <div class="modal fade" id="roleModal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="roleModalTitle">Add Role</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="roleForm">
+                                <input type="hidden" id="roleID">
+                                <div class="mb-3">
+                                    <label for="roleName" class="form-label">Role Name</label>
+                                    <input type="text" class="form-control" id="roleName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="roleDescription" class="form-label">Description</label>
+                                    <textarea class="form-control" id="roleDescription" rows="2"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="roleColour" class="form-label">Colour</label>
+                                    <input type="color" class="form-control form-control-color" id="roleColour" value="#1c0696">
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" onclick="saveRole()">Save Role</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Permissions Card -->
+            <div id="permissionsCard" class="card" style="display: none;">
+                <div class="card-header">
+                    <h4>Permissions</h4>
+                </div>
+                <div class="card-body">
+                    <p>Permissions management coming soon...</p>
+                </div>
+            </div>
+
+            <!-- System Settings Card -->
+            <div id="systemSettingsCard" class="card" style="display: none;">
+                <div class="card-header">
+                    <h4>System Settings</h4>
+                </div>
+                <div class="card-body">
+                    <p>System settings coming soon...</p>
+                </div>
+            </div>
+
+            
         </div>
     </div>
 </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="systemSettings.js"></script>
+    <script src="js/systemSettings.js"></script>
+    <script src="js/userManagement.js"></script>
+    <script src="js/roleManagement.js"></script>
 </body>
 </html>
