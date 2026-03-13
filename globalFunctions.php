@@ -31,4 +31,55 @@
         $token = generateCSRFToken();
         return '<input type="hidden" id="csrfToken" name="csrfToken" value="' . htmlspecialchars($token, ENT_QUOTES, 'UTF-8') . '">';
     }
+
+    // Start session if not already started
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    // Create a function to get database connection
+    function getDBConnection() {
+        static $connection = null;
+        
+        if ($connection === null) {
+            $connection = new mysqli("localhost", "root", "", "finalproject");
+            
+            if ($connection->connect_error) {
+                die("Database connection failed: " . $connection->connect_error);
+            }
+        }
+        
+        return $connection;
+    }
+
+    // Check if user is logged in
+    function isAuthenticated() {
+        return isset($_SESSION['userID']) && isset($_SESSION['roleID']);
+    }
+
+    // Check if user has permission for a specific feature
+    function canAccess($roleID, $featureName) {
+        // Validate inputs
+        if (!$roleID || !is_numeric($roleID) || !$featureName) {
+            return false;
+        }
+        
+        $connection = getDBConnection(); // Get connection here
+        
+        $query = "SELECT COUNT(*) as count FROM rolepermissions rp 
+                JOIN features f ON rp.featureID = f.featureID 
+                WHERE rp.roleID = ? AND f.name = ?";
+        $stmt = $connection->prepare($query);
+        
+        if (!$stmt) {
+            return false; // Query failed
+        }
+        
+        $stmt->bind_param("is", $roleID, $featureName);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        
+        return $row['count'] > 0;
+    }
 ?>

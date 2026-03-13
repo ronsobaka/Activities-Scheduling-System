@@ -1,17 +1,18 @@
 <?php
     session_start();
     require_once '../../globalFunctions.php';
-    if ((!isset($_SESSION['userID'])) || (!isset($_SESSION['roleID']))) {
-        header("Location: ../../login/loginHTML.php");
+    
+    // Check if user is logged in
+    if (!isAuthenticated()) {
+        header("Location: ../login/loginHTML.php");
         exit();
     }
 
-    if ($_SESSION['roleID'] != 1 && $_SESSION['roleID'] != 2) {
-        header("Location: ../main.php");
+    // Check if user has permission for this specific page
+    if (!canAccess($_SESSION['roleID'], 'Schedule Manager')) {
+        header("Location: ../unauthorized.php");
         exit();
     }
-    $userID = $_SESSION['userID'];
-    $roleID = $_SESSION['roleID'];
 ?>
 
 <!DOCTYPE html>

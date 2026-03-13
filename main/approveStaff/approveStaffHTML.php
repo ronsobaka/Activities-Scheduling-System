@@ -1,7 +1,15 @@
 <?php
     require_once '../globalFunctions.php';
-    if (!isset($_SESSION['userID']) || !isset($_SESSION['roleID'])) {
+    
+    // Check if user is logged in
+    if (!isAuthenticated()) {
         header("Location: ../login/loginHTML.php");
+        exit();
+    }
+
+    // Check if user has permission for this specific page
+    if (!canAccess($_SESSION['roleID'], 'Approve Staff')) {
+        header("Location: ../unauthorized.php");
         exit();
     }
 ?>

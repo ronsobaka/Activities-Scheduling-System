@@ -1,8 +1,15 @@
 <?php
     session_start();
     require_once '../../globalFunctions.php';
-    if ($_SESSION['roleID'] !== 1) {
-        header("Location: ../../login/loginHTML.php");
+    // Check if user is logged in
+    if (!isAuthenticated()) {
+        header("Location: ../login/loginHTML.php");
+        exit();
+    }
+
+    // Check if user has permission for this specific page
+    if (!canAccess($_SESSION['roleID'], 'System Settings')) {
+        header("Location: ../unauthorized.php");
         exit();
     }
 ?>
