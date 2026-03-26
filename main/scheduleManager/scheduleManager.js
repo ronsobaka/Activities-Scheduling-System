@@ -11,11 +11,6 @@ let selectedStaff = [];
 
 generateSchedule();
 
-document.getElementById("viewDropdown").addEventListener("change", function(event) {
-    selectedView = event.target.value;
-    generateSchedule();
-});
-
 document.getElementById("prevMonth").addEventListener("click", function() {
     month = monthNames[(monthNames.indexOf(month) - 1 + 12) % 12];
     if (month === "December") {
@@ -33,17 +28,6 @@ document.getElementById("nextMonth").addEventListener("click", function() {
 });
 
 function generateSchedule() {
-    document.getElementById("scheduleManagerTitle").textContent = `${month} ${year}`;
-    if (selectedView === "month") {
-        generateMonthView();
-    } else if (selectedView === "week") {
-        generateWeekView();
-    } else if (selectedView === "day") {
-        generateDayView();
-    }
-};
-
-function generateMonthView() {
 
     const monthIndex = monthNames.indexOf(month);
     let firstDay = new Date(year, monthIndex, 1).getDay();
@@ -103,14 +87,9 @@ function generateMonthView() {
     loadActivitiesForMonth(month, year);
 }
 
-function generateWeekView() {
+function generateActivityView() {
     console.log("Week view selected");
 }
-
-function generateDayView() {
-    console.log("Day view selected");
-}
-
 
 document.addEventListener("click", function(e) {
     if (e.target.closest(".calendar-cell:not(.empty)")) {
@@ -118,6 +97,11 @@ document.addEventListener("click", function(e) {
         const date = cell.dataset.date;
         
         const [year, month, day] = date.split("-");
+
+        if (cell.classList.contains("past")) {
+            alert("Cannot select past dates");
+            return;
+        }
 
         const monthName = monthNames[parseInt(month) - 1];
         document.getElementById("modalDateTitle").textContent = 
@@ -749,5 +733,133 @@ function saveStaffAssignments(activityID, staffIDs) {
     })
     .catch(error => {
         console.error("Error saving staff assignments:", error);
+    });
+}
+
+
+// Multi-day activity handlers
+document.getElementById("multiDayBtn").addEventListener("click", function() {
+    // Set default dates to today and tomorrow
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    document.getElementById("multiDayStartDate").value = today.toISOString().split('T')[0];
+    document.getElementById("multiDayEndDate").value = tomorrow.toISOString().split('T')[0];
+    
+    document.getElementById("multiDayModal").classList.add("active");
+});
+
+document.getElementById("closeMultiDayModal").addEventListener("click", function() {
+    document.getElementById("multiDayModal").classList.remove("active");
+});
+
+document.getElementById("cancelMultiDayBtn").addEventListener("click", function() {
+    document.getElementById("multiDayModal").classList.remove("active");
+});
+
+document.getElementById("saveMultiDayBtn").addEventListener("click", function() {
+    const startDate = document.getElementById("multiDayStartDate").value;
+    const endDate = document.getElementById("multiDayEndDate").value;
+    const activityName = document.getElementById("multiDayName").value;
+    
+    if (!activityName) {
+        alert("Please enter an activity name");
+        return;
+    }
+    
+    if (!startDate || !endDate) {
+        alert("Please select start and end dates");
+        return;
+    }
+    
+    if (new Date(startDate) > new Date(endDate)) {
+        alert("End date must be after start date");
+        return;
+    }
+    
+    const activityData = {
+        name: activityName,
+        startTime: document.getElementById("multiDayStartTime").value,
+        endTime: document.getElementById("multiDayEndTime").value,
+        location: document.getElementById("multiDayLocation").value,
+        equipment: document.getElementById("multiDayEquipment").value,
+        notes: document.getElementById("multiDayNotes").value,
+        selectedStaff: [] // No staff for multi-day initially
+    };
+    
+    // Create activity for each day in range
+    let currentDate = new Date(startDate);
+    const end = new Date(endDate);
+    let activitiesCreated = 0;
+    
+    while (currentDate <= end) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        
+        if (!activities[dateStr]) {
+            activities[dateStr] = [];
+        }
+        
+        activities[dateStr].push({...activityData});
+        activitiesCreated++;
+        
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    // Save all activities
+    const savePromises = [];
+    currentDate = new Date(startDate);
+    while (currentDate <= end) {
+        const dateStr = currentDate.toISOString().split('T')[0];
+        savePromises.push(saveActivityForDate(dateStr));
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    Promise.all(savePromises).then(() => {
+        alert(`Created ${activitiesCreated} activities!`);
+        document.getElementById("multiDayModal").classList.remove("active");
+        
+        // Refresh the calendar
+        generateSchedule();
+        
+        // Clear form
+        document.getElementById("multiDayName").value = '';
+        document.getElementById("multiDayLocation").value = '';
+        document.getElementById("multiDayEquipment").value = '';
+        document.getElementById("multiDayNotes").value = '';
+    }).catch(error => {
+        console.error("Error creating multi-day activities:", error);
+        alert("Error creating activities. Please try again.");
+    });
+});
+
+function saveActivityForDate(date) {
+    const activitiesForDate = activities[date] || [];
+    
+    const saveData = {
+        date: date,
+        activities: activitiesForDate.map(activity => ({
+            id: activity.id || null,
+            name: activity.name,
+            startTime: activity.startTime,
+            endTime: activity.endTime,
+            location: activity.location,
+            equipment: activity.equipment,
+            notes: activity.notes,
+            selectedStaff: activity.selectedStaff || []
+        }))
+    };
+    
+    return fetch('scheduleManager.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(saveData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            throw new Error(data.error);
+        }
+        return data;
     });
 }

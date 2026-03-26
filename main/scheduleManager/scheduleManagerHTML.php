@@ -46,16 +46,8 @@
     <div id="scheduleManagerContainer" class="schedule-manager-container">
         <div class="schedule-manager-header">
             <button id="prevMonth">Previous Month</button>
-            <h2 id="scheduleManagerTitle">Schedule manager</h2>
+            <button id="multiDayBtn" class="multi-day-btn">+ Add Multi-Day Activity</button>
             <div class="header-right">
-                <div class="view-dropdown-container">
-                    <label for="viewDropdown">View:</label>
-                    <select id="viewDropdown">
-                        <option value="month">Month</option>
-                        <option value="week">Week</option>
-                        <option value="day">Day</option>
-                    </select>
-                </div>
                 <button id="nextMonth">Next Month</button>
             </div>
         </div>
@@ -142,6 +134,50 @@
                 <div class="form-buttons">
                     <button id="saveStaffAssignments" class="save-btn">Save Assignments</button>
                     <button id="cancelStaffAssignmentBtn" class="cancel-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Multi-Day Activity Modal -->
+        <div id="multiDayModal" class="activity-modal">
+            <div class="activity-modal-content">
+                <div class="activity-modal-header">
+                    <h3>Add Multi-Day Activity</h3>
+                    <button id="closeMultiDayModal" class="close-modal">&times;</button>
+                </div>
+                
+                <div class="activity-modal-body">
+                    <div class="activity-form">
+                        <label>Activity Name:</label>
+                        <input type="text" id="multiDayName" placeholder="e.g., Project Week">
+                        
+                        <label>Start Date:</label>
+                        <input type="date" id="multiDayStartDate">
+                        
+                        <label>End Date:</label>
+                        <input type="date" id="multiDayEndDate">
+                        
+                        <label>Start Time:</label>
+                        <input type="time" id="multiDayStartTime" value="09:00">
+                        
+                        <label>End Time:</label>
+                        <input type="time" id="multiDayEndTime" value="17:00">
+                        
+                        <label>Location:</label>
+                        <input type="text" id="multiDayLocation" placeholder="e.g., Room 101">
+                        
+                        <label>Equipment:</label>
+                        <input type="text" id="multiDayEquipment" placeholder="e.g., Projector, Chairs">
+                        
+                        <label>Notes:</label>
+                        <textarea id="multiDayNotes" rows="3"></textarea>
+                        
+                        <div class="form-buttons">
+                            <button id="saveMultiDayBtn" class="save-btn">Create Activity</button>
+                            <button id="cancelMultiDayBtn" class="cancel-btn">Cancel</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

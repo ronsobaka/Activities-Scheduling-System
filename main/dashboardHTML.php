@@ -9,9 +9,9 @@
 </head>
 <body>
     <div class="topnav">
-        <a href="mainHTML.php" class="active">Home</a>
+        <a href="main.php" class="active">Home</a>
         <a href="availability/availabilityHTML.php">Availability</a>
-        <?php if ($_SESSION['isManager']): ?>
+        <?php if ($isManager): ?>
             <a href="scheduleManager/scheduleManagerHTML.php">Schedule Manager</a>
             <div class="dropdown">
                 <button class="dropBtn">Manage ▼</button>
@@ -21,7 +21,6 @@
                 </div>
             </div> 
         <?php endif; ?>
-        <a href="#about">Upcoming shifts</a>
     </div>
     <div class="divider"></div>
     <div class="title">
@@ -30,28 +29,20 @@
 
     <div class="container mt-4">
         <div class="row mb-4">
-            <!-- Welcome Card -->
             <div class="col-md-12">
                 <div class="card bg-primary text-white">
                     <div class="card-body">
-                        <h3>Welcome back, <?php echo htmlspecialchars($_SESSION['firstName']); ?>!</h3>
+                        <h3>Welcome back, <?php echo htmlspecialchars($user['firstName']); ?>!</h3>
                         <p class="mb-0">Here's what's happening today.</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Stats Cards -->
+        <!-- Stats Cards - Only for Managers -->
+        <?php if ($isManager): ?>
         <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h1 class="display-4" id="upcomingShiftsCount">-</h1>
-                        <p class="text-muted">Upcoming Shifts</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="card text-center">
                     <div class="card-body">
                         <h1 class="display-4" id="totalStaffCount">-</h1>
@@ -59,7 +50,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="card text-center">
                     <div class="card-body">
                         <h1 class="display-4" id="pendingApprovalsCount">-</h1>
@@ -67,7 +58,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <div class="card text-center">
                     <div class="card-body">
                         <h1 class="display-4" id="activitiesThisWeek">-</h1>
@@ -76,8 +67,40 @@
                 </div>
             </div>
         </div>
+        <?php endif; ?>
 
-        <!-- Upcoming Shifts Table -->
+        <!-- Two Column Layout for Today's Activities and Staff Onsite -->
+        <div class="row mb-4">
+            <!-- Today's Activities -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">📅 Today's Activities</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="todaysActivities">
+                            <p class="text-muted">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Staff Onsite -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">👥 Staff Onsite Today</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="staffOnsite">
+                            <p class="text-muted">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Shifts Table - Shows for Everyone -->
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
@@ -92,7 +115,7 @@
                                     <th>Activity</th>
                                     <th>Time</th>
                                     <th>Location</th>
-                                 </tr>
+                                </tr>
                             </thead>
                             <tbody id="upcomingShiftsTable">
                                  <tr><td colspan="4" class="text-center">Loading...</td></tr>
