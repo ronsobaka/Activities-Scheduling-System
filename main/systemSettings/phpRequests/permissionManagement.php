@@ -45,5 +45,37 @@
             
             echo json_encode($permissions);
         }
+    } else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $data = json_decode(file_get_contents('php://input'), true);
+        
+        if ($data['action'] === 'save') {
+            $roleID = $data['roleID'];
+            $featureIDs = $data['featureIDs'];
+            
+            $connection->begin_transaction();
+            
+            try {
+                // Delete existing permissions
+                $deleteStmt = $connection->prepare("DELETE FROM rolepermissions WHERE roleID = ?");
+                $deleteStmt->bind_param("i", $roleID);
+                $deleteStmt->execute();
+                
+                // Insert new permissions
+                if (!empty($featureIDs)) {
+                    $insertStmt = $connection->prepare("INSERT INTO rolepermissions (roleID, featureID) VALUES (?, ?)");
+                    foreach ($featureIDs as $featureID) {
+                        $insertStmt->bind_param("ii", $roleID, $featureID);
+                        $insertStmt->execute();
+                    }
+                }
+                
+                $connection->commit();
+                echo json_encode(['success' => true]);
+                
+            } catch (Exception $e) {
+                $connection->rollback();
+                echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+            }
+        }
     }
 ?>

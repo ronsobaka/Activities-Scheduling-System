@@ -82,4 +82,30 @@
         
         return $row['count'] > 0;
     }
+
+    // In globalFunctions.php, add:
+    function getSetting($key) {
+        static $settings = null;
+        
+        if ($settings === null) {
+            $connection = getDBConnection();
+            $result = $connection->query("SELECT * FROM systemsettings LIMIT 1");
+            $settings = $result->fetch_assoc();
+        }
+        
+        return $settings[$key] ?? null;
+    }
+
+    // Then create these helper functions:
+    function formatDate($date) {
+        $format = getSetting('dateFormat') ?: 'd/m/Y';
+        return date($format, strtotime($date));
+    }
+
+    function showMaintenanceBanner() {
+        $message = getSetting('maintenanceMessage');
+        if ($message) {
+            echo '<div class="alert alert-warning text-center mb-0">⚠️ ' . htmlspecialchars($message) . '</div>';
+        }
+    }
 ?>

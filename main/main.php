@@ -40,5 +40,5 @@
 
     $isManager = ($user['roleID'] == 1 || $user['roleID'] == 2);
     $isStaff = ($user['roleID'] == 3);
-    include "mainHTML.php";
+    include "dashboardHTML.php";
 ?>

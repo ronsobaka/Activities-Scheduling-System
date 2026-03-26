@@ -37,7 +37,6 @@
             </div>
         </div> 
         <?php endif; ?>
-        <a href="#about">Upcoming shifts</a>
     </div>
     <div class="divider"></div>
     <div class="title">
@@ -224,7 +223,7 @@
                                 <!-- Permissions will be loaded here -->
                             </tbody>
                         </table>
-                        <button class="btn btn-primary" onclick="savePermissions()">Save Permissions</button>
+                        <button class="btn btn-primary" id="savePermissionsBtn"onclick="savePermissions()">Save Permissions</button>
                     </div>
                 </div>
             </div>
@@ -235,11 +234,84 @@
                     <h4>System Settings</h4>
                 </div>
                 <div class="card-body">
-                    <p>System settings coming soon...</p>
+                    <form id="systemSettingsForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="siteName" class="form-label">Site Name</label>
+                                    <input type="text" class="form-control" id="siteName" value="Staff Scheduling System">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="siteEmail" class="form-label">Contact Email</label>
+                                    <input type="email" class="form-control" id="siteEmail" value="admin@example.com">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="defaultRole" class="form-label">Default Role for New Staff</label>
+                                    <select class="form-select" id="defaultRole">
+                                        <option value="4">Staff</option>
+                                        <option value="5">Part Time Staff</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="sessionTimeout" class="form-label">Session Timeout (minutes)</label>
+                                    <input type="number" class="form-control" id="sessionTimeout" value="30" min="5" max="120">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="dateFormat" class="form-label">Date Format</label>
+                                    <select class="form-select" id="dateFormat">
+                                        <option value="d/m/Y">DD/MM/YYYY</option>
+                                        <option value="m/d/Y">MM/DD/YYYY</option>
+                                        <option value="Y-m-d">YYYY-MM-DD</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="allowSelfRegistration" checked>
+                                        <label class="form-check-label" for="allowSelfRegistration">Allow Self Registration</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="requireApproval" checked>
+                                        <label class="form-check-label" for="requireApproval">Require Admin Approval for New Staff</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label for="maintenanceMessage" class="form-label">Maintenance Message</label>
+                                    <textarea class="form-control" id="maintenanceMessage" rows="2" placeholder="Leave empty if no maintenance..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn btn-primary" id="saveSystemSettingsBtn">Save Settings</button>
+                    </form>
                 </div>
             </div>
-
-            
         </div>
     </div>
 </div>

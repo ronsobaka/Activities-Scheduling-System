@@ -32,7 +32,7 @@ document.getElementById("loginForm").addEventListener("submit", function (event)
             message.style.color = "green";
 
             setTimeout(() => {
-                window.location.href = "../main/main.php";
+                window.location.href = "../main/dashboardHTML.php";
             }, 2000);
         } else {
             message.textContent = data.message;

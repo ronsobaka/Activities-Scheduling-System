@@ -77,9 +77,80 @@ function displayPermissions(hasPermission) {
 }
 
 function savePermissions() {
+    const roleID = document.getElementById("permissionRoleSelect").value;
+    if (!roleID) {
+        alert("Please select a role first");
+        return;
+    }
     
+    const checkboxes = document.querySelectorAll('#permissionsTableBody input[type="checkbox"]:checked');
+    const featureIDs = Array.from(checkboxes).map(cb => parseInt(cb.dataset.featureId));
+    
+    if (!confirm("Save these permissions for this role?")) {
+        return;
+    }
+    
+    const saveBtn = document.getElementById("savePermissionsBtn");
+    const originalText = saveBtn.innerHTML;
+    
+    // Show loading state
+    saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+    saveBtn.disabled = true;
+    
+    fetch('phpRequests/permissionManagement.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            action: 'save',
+            roleID: roleID,
+            featureIDs: featureIDs
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Success - turn button green with checkmark
+            saveBtn.innerHTML = '✓ Saved!';
+            saveBtn.classList.remove('btn-primary');
+            saveBtn.classList.add('btn-success');
+            
+            // Reset button after 2 seconds
+            setTimeout(() => {
+                saveBtn.innerHTML = originalText;
+                saveBtn.classList.remove('btn-success');
+                saveBtn.classList.add('btn-primary');
+                saveBtn.disabled = false;
+            }, 2000);
+        } else {
+            // Error - show error state
+            saveBtn.innerHTML = '✗ Error';
+            saveBtn.classList.remove('btn-primary');
+            saveBtn.classList.add('btn-danger');
+            
+            setTimeout(() => {
+                saveBtn.innerHTML = originalText;
+                saveBtn.classList.remove('btn-danger');
+                saveBtn.classList.add('btn-primary');
+                saveBtn.disabled = false;
+            }, 2000);
+            alert("Error: " + data.error);
+        }
+    })
+    .catch(error => {
+        console.error("Error saving permissions:", error);
+        saveBtn.innerHTML = '✗ Failed';
+        saveBtn.classList.remove('btn-primary');
+        saveBtn.classList.add('btn-danger');
+        
+        setTimeout(() => {
+            saveBtn.innerHTML = originalText;
+            saveBtn.classList.remove('btn-danger');
+            saveBtn.classList.add('btn-primary');
+            saveBtn.disabled = false;
+        }, 2000);
+        alert("Failed to save permissions");
+    });
 }
-
 // Helper function
 function escapeHTML(text) {
     if (!text) return '';

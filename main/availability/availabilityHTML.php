@@ -24,7 +24,7 @@
 </head>
 <body>
     <div class="topnav">
-        <a href="../main.php">Home</a>
+        <a href="../dashboardHTML.php">Home</a>
         <a class="active">Availability</a>
         <?php if ($_SESSION['isManager']): ?>
             <a href="../scheduleManager/scheduleManagerHTML.php">Schedule Manager</a>
@@ -36,7 +36,6 @@
                 </div>
             </div> 
         <?php endif; ?>        
-        <a href="#about">About</a>
     </div>
     <div class="divider"></div>
     <div class="title">
