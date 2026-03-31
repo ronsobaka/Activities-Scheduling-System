@@ -33,7 +33,7 @@
         <div class="dropdown">
             <button class="dropBtn">Manage ▼</button>
             <div class="dropdown-content">
-                <a href="#approveStaff">Approve Staff</a>
+                <a href="../approveStaff/approveStaffHTML.php">Approve Staff</a>
                 <a href="../systemSettings/systemSettingsHTML.php">System Settings</a>
             </div>
         </div>

@@ -1,3 +1,16 @@
+<?php
+    require_once '../globalFunctions.php';
+    
+    if (!isAuthenticated()) {
+        header("Location: ../login/loginHTML.php");
+        exit();
+    }
+
+    $isManager = $_SESSION['isManager'] ?? false;
+    $user = $_SESSION;
+?>
+
+
 <!DOCTYPE html>
 <html>
 <head>

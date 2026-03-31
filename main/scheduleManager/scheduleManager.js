@@ -520,6 +520,7 @@ function updateStaffAssignmentModal(date) {
 
         if (selectedStaff.includes(String(staff.userID))) {
             staffElement.classList.add("selected");
+            staffElement.style.display = "none";     
             addToSelectedList(staff);
         }
 
@@ -565,11 +566,14 @@ function createStaffElement(staff, isForSelectedList = false) {
                 this.classList.remove("selected");
                 selectedStaff = selectedStaff.filter(id => String(id) !== String(userID));
                 removeFromSelectedList(userID);
+                this.style.display = "flex";
             } else {
                 if (staff.availability !== "unavailable") {
                     this.classList.add("selected");
                     selectedStaff.push(String(userID));
                     addToSelectedList(staff);
+
+                    this.style.display = "none";
                 }
             }
 
@@ -626,9 +630,30 @@ function removeFromSelectedList(userID) {
 function removeStaff(staffID) {
     selectedStaff = selectedStaff.filter(id => id !== staffID);
     removeFromSelectedList(staffID);
+
     const staffItem = document.querySelector(`.staff-item[data-user-id="${staffID}"]`);
+
     if (staffItem) {
         staffItem.classList.remove("selected");
+        staffItem.style.display = "flex";
+    } else {
+        const date = document.getElementById("activityModal").dataset.currentDate;
+        const staffData = staffAvailability[date]?.staff.find(s => String(s.userID) === String(staffID));
+
+        if (staffData) {
+            // Recreate the staff element
+            const newStaffElement = createStaffElement(staffData);
+            
+            // Add it to the correct list based on availability
+            if (staffData.availability === "available") {
+                document.getElementById("availableStaffList").appendChild(newStaffElement);
+            } else if (staffData.availability === "conditioned") {
+                document.getElementById("conditionedStaffList").appendChild(newStaffElement);
+            } else {
+                newStaffElement.classList.add("unavailable");
+                document.getElementById("unavailableStaffList").appendChild(newStaffElement);
+            }
+        }
     }
     updateActivityFormSelectedStaff();
 }
