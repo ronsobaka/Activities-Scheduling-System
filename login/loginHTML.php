@@ -32,7 +32,7 @@
             <p id="loginMessage"></p>
 
             <p class="forgot-password">
-                <a href="../Forgot Password/forgotPassword.html">Forgot password?</a>
+                <a href="forgotPassword/forgotPasswordHTML.php">Forgot password?</a>
             </p>
 
             <button id="loginBtn" type="submit">Log in</button>
