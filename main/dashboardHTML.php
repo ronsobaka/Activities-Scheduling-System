@@ -80,7 +80,7 @@
                 </div>
             </div>
         </div>
-        <?php endif; ?>
+        
 
         <!-- Two Column Layout for Today's Activities and Staff Onsite -->
         <div class="row mb-4">
@@ -112,7 +112,7 @@
                 </div>
             </div>
         </div>
-
+        <?php endif; ?>
         <!-- Upcoming Shifts Table - Shows for Everyone -->
         <div class="row">
             <div class="col-md-12">

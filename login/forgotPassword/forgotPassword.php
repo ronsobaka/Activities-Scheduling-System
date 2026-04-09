@@ -12,7 +12,7 @@
     $email = $_POST['email'] ?? '';
 
     if (empty($email)) {
-        echo json_encode(['success' => false, 'message' => 'Email is required']);
+        echo json_encode(['success' => false, 'message' => 'wEmail is required']);
         exit();
     }
 
