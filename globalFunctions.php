@@ -83,7 +83,7 @@
         return $row['count'] > 0;
     }
 
-    // In globalFunctions.php, add:
+
     function getSetting($key) {
         static $settings = null;
         

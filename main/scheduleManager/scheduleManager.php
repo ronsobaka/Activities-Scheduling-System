@@ -26,18 +26,17 @@
         $month = $_GET['month'] ?? null;
         $year = $_GET['year'] ?? null;
 
-        
         if ($date) {
-
+            // Fetch all activities for this date (all managers)
             $stmt = $connection->prepare("
                 SELECT a.id, a.name, a.startTime, a.endTime, a.location, a.equipment, a.notes,
                     GROUP_CONCAT(aa.userID) as assigned_staff
                 FROM activities a
                 LEFT JOIN activityassignments aa ON a.id = aa.activityID
-                WHERE a.userID = ? AND a.activityDate = ?
+                WHERE a.activityDate = ?
                 GROUP BY a.id
             ");
-            $stmt->bind_param("is", $userID, $date);
+            $stmt->bind_param("s", $date);
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -63,15 +62,16 @@
             $startDate = "$year-$monthNum-01";
             $endDate = date("Y-m-t", strtotime($startDate));
             
+            // Fetch all activities for this month (all managers)
             $stmt = $connection->prepare("
                 SELECT a.id, a.name, a.startTime, a.endTime, a.location, a.equipment, a.notes, a.activityDate,
                     GROUP_CONCAT(aa.userID) as assigned_staff
                 FROM activities a
                 LEFT JOIN activityassignments aa ON a.id = aa.activityID
-                WHERE a.userID = ? AND a.activityDate BETWEEN ? AND ?
+                WHERE a.activityDate BETWEEN ? AND ?
                 GROUP BY a.id
             ");
-            $stmt->bind_param("iss", $userID, $startDate, $endDate);
+            $stmt->bind_param("ss", $startDate, $endDate);
             $stmt->execute();
             $result = $stmt->get_result();
             
@@ -94,13 +94,13 @@
             }
             
             echo json_encode($activities);
+
         } else {
             echo json_encode(["error" => "Date or month parameter required"]);
         }
     }
 
     // Handle POST request to save activity
-
     if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $json = file_get_contents("php://input");
         $data = json_decode($json, true);
@@ -116,9 +116,9 @@
         $connection->begin_transaction();
   
         try {
-
-            $getIDsStmt = $connection->prepare("SELECT id FROM activities WHERE userID = ? AND activityDate = ?");
-            $getIDsStmt->bind_param("is", $userID, $date);
+            // Get IDs of all activities on this date (regardless of who created them)
+            $getIDsStmt = $connection->prepare("SELECT id FROM activities WHERE activityDate = ?");
+            $getIDsStmt->bind_param("s", $date);
             $getIDsStmt->execute();
             $result = $getIDsStmt->get_result();
 
@@ -128,9 +128,9 @@
                 $deleteAssignmentsStmt->execute();
             }
 
-
-            $deleteStmt = $connection->prepare("DELETE FROM activities WHERE userID = ? AND activityDate = ?");
-            $deleteStmt->bind_param("is", $userID, $date);
+            // Delete all activities for this date
+            $deleteStmt = $connection->prepare("DELETE FROM activities WHERE activityDate = ?");
+            $deleteStmt->bind_param("s", $date);
             $deleteStmt->execute();
 
             if (!empty($activities)) {
@@ -140,6 +140,7 @@
                 );
 
                 foreach ($activities as $activity) {
+                    // Still store userID for audit trail of who created it
                     $insertStmt->bind_param(
                         "isssssss",
                         $userID,
@@ -157,8 +158,13 @@
 
             $connection->commit();
 
-            $selectStmt = $connection->prepare("SELECT id, name, startTime, endTime, location, equipment, notes FROM activities WHERE userID = ? AND activityDate = ?");
-            $selectStmt->bind_param("is", $userID, $date);
+            // Return all activities for this date
+            $selectStmt = $connection->prepare("
+                SELECT id, name, startTime, endTime, location, equipment, notes 
+                FROM activities 
+                WHERE activityDate = ?
+            ");
+            $selectStmt->bind_param("s", $date);
             $selectStmt->execute();
             $result = $selectStmt->get_result();
 

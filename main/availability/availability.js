@@ -245,7 +245,7 @@ function loadConditionsForDate(dateKey) {
 
     if (conditionsData[dateKey]) {
         conditionsData[dateKey].forEach((condition, index) => {
-            addConditionItem(condition.start, condition.end, condition.reason, dateKey, index);
+            addConditionItem(condition.startTime, condition.endTime, condition.reason, dateKey, index);
         });
     }
 }

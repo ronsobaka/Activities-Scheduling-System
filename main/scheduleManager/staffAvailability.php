@@ -4,6 +4,12 @@
     ob_clean();
     session_start();
     require_once '../../globalFunctions.php';
+    require_once '../../PHPMailer/src/Exception.php';
+    require_once '../../PHPMailer/src/PHPMailer.php';
+    require_once '../../PHPMailer/src/SMTP.php';
+
+    use PHPMailer\PHPMailer\PHPMailer;
+    use PHPMailer\PHPMailer\Exception;
 
     header("content-type: application/json"); 
 
@@ -52,6 +58,105 @@
             }
 
             $connection->commit();
+
+            // ---- SHIFT NOTIFICATION EMAILS ----
+            if (!empty($staffIds)) {
+
+                // Get activity details
+                $activityStmt = $connection->prepare("
+                    SELECT name, activityDate, startTime, endTime, location, equipment, notes 
+                    FROM activities 
+                    WHERE id = ?
+                ");
+                $activityStmt->bind_param("i", $activityID);
+                $activityStmt->execute();
+                $activity = $activityStmt->get_result()->fetch_assoc();
+
+                $formattedDate = date('l j F Y', strtotime($activity['activityDate']));
+                $startTime = substr($activity['startTime'], 0, 5);
+                $endTime = substr($activity['endTime'], 0, 5);
+
+                // Get each staff member's email and name
+                $placeholders = implode(',', array_fill(0, count($staffIds), '?'));
+                $staffStmt = $connection->prepare("
+                    SELECT firstName, lastName, email 
+                    FROM user 
+                    WHERE userID IN ($placeholders)
+                ");
+                $types = str_repeat('i', count($staffIds));
+                $staffStmt->bind_param($types, ...$staffIds);
+                $staffStmt->execute();
+                $staffResult = $staffStmt->get_result();
+
+                while ($staff = $staffResult->fetch_assoc()) {
+                    $mail = new PHPMailer(true);
+                    try {
+                        $mail->isSMTP();
+                        $mail->Host       = 'smtp.gmail.com';
+                        $mail->SMTPAuth   = true;
+                        $mail->Username   = 'ronniejf2004@gmail.com';
+                        $mail->Password   = 'mljh zisl lemg knrt';
+                        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                        $mail->Port       = 587;
+
+                        $mail->setFrom('ronniejf2004@gmail.com', 'Staff Scheduling');
+                        $mail->addAddress($staff['email']);
+                        $mail->Subject = "You've been assigned to {$activity['name']}";
+                        $mail->isHTML(true);
+
+                        $locationRow = $activity['location'] 
+                            ? "<tr><td style='padding: 8px; color: #666;'>Location</td><td style='padding: 8px;'>{$activity['location']}</td></tr>" 
+                            : "";
+                        $equipmentRow = $activity['equipment'] 
+                            ? "<tr><td style='padding: 8px; color: #666;'>Equipment</td><td style='padding: 8px;'>{$activity['equipment']}</td></tr>" 
+                            : "";
+                        $notesRow = $activity['notes'] 
+                            ? "<tr><td style='padding: 8px; color: #666;'>Notes</td><td style='padding: 8px;'>{$activity['notes']}</td></tr>" 
+                            : "";
+
+                        $mail->Body = "
+                            <div style='font-family: Arial, sans-serif; max-width: 500px; margin: auto;'>
+                                <h2 style='background: linear-gradient(to right, #7aa9b8, #1c0696); color: white; padding: 20px; text-align: center;'>
+                                    Staff Scheduling
+                                </h2>
+                                <div style='padding: 20px;'>
+                                    <p>Hi {$staff['firstName']},</p>
+                                    <p>You have been assigned to the following activity:</p>
+                                    
+                                    <table style='width: 100%; border-collapse: collapse; margin: 20px 0; background: #f9f9f9; border-radius: 5px;'>
+                                        <tr style='background: #040d8a; color: white;'>
+                                            <td colspan='2' style='padding: 10px; font-weight: bold;'>{$activity['name']}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style='padding: 8px; color: #666;'>Date</td>
+                                            <td style='padding: 8px;'>{$formattedDate}</td>
+                                        </tr>
+                                        <tr style='background: #f0f0f0;'>
+                                            <td style='padding: 8px; color: #666;'>Time</td>
+                                            <td style='padding: 8px;'>{$startTime} - {$endTime}</td>
+                                        </tr>
+                                        {$locationRow}
+                                        {$equipmentRow}
+                                        {$notesRow}
+                                    </table>
+
+                                    <p style='color: #888; font-size: 0.85em;'>
+                                        Please log in to the staff scheduling system to view your full schedule.
+                                    </p>
+                                </div>
+                            </div>
+                        ";
+
+                        $mail->send();
+
+                    } catch (Exception $e) {
+                        // Log email failure but don't stop execution
+                        error_log("Failed to send shift notification to {$staff['email']}: " . $e->getMessage());
+                    }
+                }
+            }
+            // ---- END SHIFT NOTIFICATION EMAILS ----
+
             echo json_encode(["success" => true]);
 
         } catch (Exception $e) {
@@ -90,12 +195,12 @@
         $stmt->execute();
         $result = $stmt->get_result();
         
-        while ($row  = $result->fetch_assoc()) {
-            $staffAvailability[$row['userID']]= [
+        while ($row = $result->fetch_assoc()) {
+            $staffAvailability[$row['userID']] = [
                 "userID" => $row['userID'],
                 "firstName" => $row['firstName'],
                 "lastName" => $row['lastName'],
-                "roleColour"=> $row['roleColour'] ?? '#1c0696',
+                "roleColour" => $row['roleColour'] ?? '#1c0696',
                 "availability" => "available",
                 "selected" => false,
                 "conditions" => []
@@ -108,8 +213,8 @@
         $stmt->execute();
         $result = $stmt->get_result();
         
-        while($row = $result->fetch_assoc()) {
-            if (isset($staffAvailability[$row['userID']]) ) {
+        while ($row = $result->fetch_assoc()) {
+            if (isset($staffAvailability[$row['userID']])) {
                 $staffAvailability[$row['userID']]['availability'] = "unavailable";
             }
         }
@@ -120,8 +225,8 @@
         $stmt->execute();
         $result = $stmt->get_result();
         
-        while($row = $result->fetch_assoc()) {
-            if (isset($staffAvailability[$row['userID']]) ) {
+        while ($row = $result->fetch_assoc()) {
+            if (isset($staffAvailability[$row['userID']])) {
                 $staffAvailability[$row['userID']]['availability'] = "conditioned";
                 $staffAvailability[$row['userID']]['conditions'][] = [
                     "startTime" => $row['starttime'],
@@ -139,7 +244,7 @@
             $result = $stmt->get_result();
 
             while ($row = $result->fetch_assoc()) {
-                if (isset($staffAvailability[$row['userID']]) ) {
+                if (isset($staffAvailability[$row['userID']])) {
                     $staffAvailability[$row['userID']]['selected'] = true;
                 }
             }

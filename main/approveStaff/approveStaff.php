@@ -10,10 +10,10 @@ if (!isAuthenticated() || !canAccess($_SESSION['roleID'], 'Approve Staff')) {
 $connection = getDBConnection();
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    // Get pending staff
+    // Get email verified staff awaiting approval
     $query = "SELECT userID, firstName, lastName, email, created_at 
               FROM user 
-              WHERE status = 'pending' 
+              WHERE status = 'email_verified' 
               ORDER BY created_at ASC";
     
     $result = $connection->query($query);
@@ -30,9 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $userID = $data['userID'];
     
     if ($data['action'] === 'approve') {
-        // Get default role from system settings
         $settingsResult = $connection->query("SELECT defaultRole FROM systemsettings LIMIT 1");
-        $defaultRole = 4; // Default to Staff if no setting
+        $defaultRole = 4;
         if ($settingsResult && $settingsResult->num_rows > 0) {
             $row = $settingsResult->fetch_assoc();
             $defaultRole = $row['defaultRole'];

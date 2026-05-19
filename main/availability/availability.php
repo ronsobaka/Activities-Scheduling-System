@@ -46,9 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
     while($row = $result->fetch_assoc()) {
         $condition = $row['conditionDate'];
-
-        $conditionParts = explode("-", $condition);
-        $conditionKey = sprintf("%d-%d-%d", $conditionParts[0], intval($conditionParts[1]), intval($conditionParts[2]));
+        
+        $conditionKey = date("j F, Y", strtotime($condition));
+        
         $response["conditions"][$conditionKey][] = [
             "startTime" => $row['startTime'],
             "endTime" => $row['endTime'],

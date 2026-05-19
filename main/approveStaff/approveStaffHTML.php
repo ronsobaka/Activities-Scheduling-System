@@ -26,7 +26,7 @@
 </head>
 <body>
     <div class="topnav">
-        <a href="../mainHTML.php">Home</a>
+        <a href="../dashboardHTML.php">Home</a>
         <a href="../availability/availabilityHTML.php">Availability</a>
         <?php if ($_SESSION['isManager']): ?>
             <a href="../scheduleManager/scheduleManagerHTML.php">Schedule Manager</a>

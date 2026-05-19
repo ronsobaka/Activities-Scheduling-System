@@ -124,6 +124,17 @@ function toggleUserStatus(userID, event) {
     }
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    loadUsers();
+
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            filterUsers(e.target.value);
+        });
+    }
+});
+
 function filterUsers(searchText) {
     const filtered = allUsers.filter(user => {
         const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
